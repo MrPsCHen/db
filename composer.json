@@ -1,0 +1,23 @@
+{
+    "name": "doit/db",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "EasyDb\\": "src/Db",
+            "EasyDb\\Config\\": "src/Db/Config",
+            "EasyDb\\Drive\\": "src/Db/Drive",
+            "EasyDb\\Exception\\": "src/Db/Exception"
+        }
+    },
+    "authors": [
+        {
+            "name": "PS Chen",
+            "email": "cps_1993@126.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+      "ext-pdo": "*"
+    }
+}
