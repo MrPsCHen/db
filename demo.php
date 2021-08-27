@@ -1,12 +1,12 @@
 <?php
 
 include "./vendor/autoload.php";
-$db = new \EasyDb\Db();
+//$db = new \EasyDb\Db();
 $config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 
-$db::setConfig($config);
-$db::setDrive($drive);
+\EasyDb\Db::setConfig($config);
+\EasyDb\Db::setDrive($drive);
 //
 //try {
 //    $db->testConnect();
@@ -14,8 +14,8 @@ $db::setDrive($drive);
 //}
 $ins = \EasyDb\Db::table('user');
 
-$back = $ins->where(['id'=>1])->select()->toArray();
-
+//$back = $ins->where([[['id'=>1,'name'=>1]],['id'=>2]])->select()->toArray();
+$back = $ins->where(["id"=>1,[["name"=>"john" , "id"=>1]]])->select()->toArray();
 var_export($back);
 //
 //$where1 =

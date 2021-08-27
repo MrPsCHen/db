@@ -21,8 +21,6 @@ class MysqlPdoDrive implements Drive
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
 
-
-
         return $this->pdo = $this->pdo ?? new \PDO($dsn,$config['username'],$config['password']);
 
     }

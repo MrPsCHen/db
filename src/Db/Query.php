@@ -14,13 +14,13 @@ class Query
     protected static string $field  = '*';
     protected static bool   $build  = false;
     protected static string $sql_1  = 'SELECT [$FIELD] ';
-    protected static string $sql_2  = 'FROM [$TABLE]';
-    protected static string $sql_3  = 'WHERE [$WHERE]';
-    protected static string $sql_4  = 'GROUP BY [$GROUP_BY]';
-    protected static string $sql_5  = 'ORDER BY [$ORDER_BY]';
+    protected static string $sql_2  = 'FROM [$TABLE] ';
+    protected static string $sql_3  = 'WHERE [$WHERE] ';
+    protected static string $sql_4  = 'GROUP BY [$GROUP_BY] ';
+    protected static string $sql_5  = 'ORDER BY [$ORDER_BY] ';
 
     protected static        $input_field;
-    protected static string $modem_where = '';
+    protected static        $modem_where = '';
     protected static string $modem_field = '*';
 
     public function __construct($table)
@@ -29,16 +29,17 @@ class Query
     }
 
 
-    public function select(): Query
-    {
 
+    public function select(): ?Query
+    {
         $sql = self::formatField();
-        $sql.=str_replace('[$TABLE]',self::$table,self::$sql_2);
-        if(self::$build)return $sql;
+        $sql.= str_replace('[$TABLE]',self::$table,self::$sql_2);
+        $sql.= self::formatWhere();
+        echo $sql;
+        exit;
         if(self::$drive){
             self::$back = self::$drive->baseQuery($sql);
         }
-
         return $this;
     }
 
@@ -50,11 +51,7 @@ class Query
 
     public function where($condition = null): Query
     {
-        //TODO 查询条件
-        if(is_string($condition) && strlen($condition)>0)
-            self::$modem_where = $condition;
-        else
-            self::$modem_where = self::formatWhere($condition);
+        self::$modem_where = $condition;
         return $this;
     }
 
@@ -128,10 +125,37 @@ class Query
 
 
 
-    protected static function formatWhere($where): string
+    protected static function formatWhere(): string
     {
+        if(is_string(self::$modem_where))
+            return self::$modem_where;
 
+        if(is_array(self::$modem_where)){
+            return str_replace('[$WHERE]',self::_deep_formatWhere((array)self::$modem_where),self::$sql_3);
+        }
         return '';
+    }
+    protected static function _deep_formatWhere(array $option ,bool $pack_flag = false): string
+    {
+        $values = array_values($option);
+        $keys   = array_keys($option);
+        $_where = '';
+        for($i=0;$i<count($option);$i++)
+        {
+            if(is_string($values[$i]) || is_numeric($values[$i])){
+                $_where.= is_numeric($values[$i]) ?"{$keys[$i]}={$values[$i]} ":"{$keys[$i]}=\"{$values[$i]}\" ";
+            }else{
+                $flag = false;
+                if(is_array($values[$i]) && count($values[$i])==1 && isset($values[$i][0])&& is_array($values[$i][0])){
+                    $flag = true;
+                }
+                $_where.= self::_deep_formatWhere($values[$i],$flag);
+
+            }
+            isset($values[$i+1]) &&($_where.= is_array($values[$i+1])?'OR ':'AND ');
+        }
+
+        return $pack_flag?"({$_where}) ":$_where;
     }
 
 
