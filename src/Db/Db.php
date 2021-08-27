@@ -10,16 +10,11 @@ class Db
     protected static config $config;
     protected static Drive\Drive  $drive;
 
-
-
-
     public function testConnect()
     {
-
         if(empty(self::$drive))throw DbException::point(102);
         return self::$drive->testConnect();
     }
-
     /**
      * @return config
      */
@@ -57,6 +52,11 @@ class Db
     public static function table($table):Query
     {
         return Query::bind(self::$drive,$table);
+    }
+
+    public static function Instance()
+    {
+
     }
 
 

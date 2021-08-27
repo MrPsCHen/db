@@ -11,15 +11,16 @@ class Query
     protected static string $table  = '';
     protected static ?Drive $drive  = null;
     protected static ?array $back   = null;
-    protected static string $field  = '*';
-    protected static bool   $build  = false;
     protected static string $sql_1  = 'SELECT [$FIELD] ';
     protected static string $sql_2  = 'FROM [$TABLE] ';
     protected static string $sql_3  = 'WHERE [$WHERE] ';
-    protected static string $sql_4  = 'GROUP BY [$GROUP_BY] ';
-    protected static string $sql_5  = 'ORDER BY [$ORDER_BY] ';
+//    protected static string $sql_4  = 'GROUP BY [$GROUP_BY] ';
+//    protected static string $sql_5  = 'ORDER BY [$ORDER_BY] ';
 
-    protected static        $input_field;
+//    protected static        $input_field;
+    /**
+     * @var string|array
+     */
     protected static        $modem_where = '';
     protected static string $modem_field = '*';
 
@@ -27,7 +28,6 @@ class Query
     {
         self::$table = $table;
     }
-
 
 
     public function select(): ?Query
@@ -55,55 +55,65 @@ class Query
         return $this;
     }
 
-    public function orderBy()
-    {
+//    public function orderBy()
+//    {
+//
+//    }
+//
+//    public function groupBy()
+//    {
+//
+//    }
+//
+//    public function limit()
+//    {
+//
+//    }
 
+    public function join($table,$join_type)
+    {
+        ///数据表规范
+        ///1.字段名：主表字段与关联表主键关联
+        /// 2.
     }
 
-    public function groupBy()
-    {
-
-    }
-
-    public function limit()
-    {
-
-    }
-
-    public function join()
-    {
-
-    }
-
-    public function extra()
-    {
-
-    }
+//    public function extra()
+//    {
+//
+//    }
 
 
 
-    public function field()
-    {
+//    public function field()
+//    {
+//
+//    }
 
-    }
+//    public function inc()
+//    {
+//
+//    }
 
-    public function inc()
-    {
+//    public function dec()
+//    {
+//
+//    }
 
-    }
+//    public function build(): Query
+//    {
+//        self::$build = true;
+//        return $this;
+//    }
 
-    public function dec()
-    {
+//    public function count():int
+//    {
+//
+//    }
 
-    }
-
-    public function build(): Query
-    {
-        self::$build = true;
-        return $this;
-    }
-
-
+//    public function find():Query
+//    {
+//
+//    }
 
 
     public static function bind(Drive $drive,$table): Query
@@ -120,9 +130,6 @@ class Query
     {
         self::$drive = $drive;
     }
-
-
-
 
 
     protected static function formatWhere(): string
@@ -143,7 +150,7 @@ class Query
         for($i=0;$i<count($option);$i++)
         {
             if(is_string($values[$i]) || is_numeric($values[$i])){
-                $_where.= is_numeric($values[$i]) ?"{$keys[$i]}={$values[$i]} ":"{$keys[$i]}=\"{$values[$i]}\" ";
+                $_where.= is_numeric($values[$i]) ?"$keys[$i]=$values[$i] ":"$keys[$i]=\"$values[$i]\" ";
             }else{
                 $flag = false;
                 if(is_array($values[$i]) && count($values[$i])==1 && isset($values[$i][0])&& is_array($values[$i][0])){
@@ -155,7 +162,7 @@ class Query
             isset($values[$i+1]) &&($_where.= is_array($values[$i+1])?'OR ':'AND ');
         }
 
-        return $pack_flag?"({$_where}) ":$_where;
+        return $pack_flag?"($_where) ":$_where;
     }
 
 

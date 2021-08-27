@@ -25,7 +25,7 @@
 基本是模仿TP DB操作流程
 
 常用方法
-1. `toArray` 与TP一样，获得select结果集
+1. `toArray` 与TP一样，获得select 数组结果集
 
 ######基本查询:
     $db = \EasyDb\Db::table('user');
