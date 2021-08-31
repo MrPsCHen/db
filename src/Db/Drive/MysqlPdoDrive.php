@@ -9,6 +9,7 @@ class MysqlPdoDrive implements Drive
 {
     protected Config $Config;
     protected \PDO  $pdo;
+    protected static string $charset = 'utf8';
 
     /**
      * @throws DbException
@@ -20,9 +21,9 @@ class MysqlPdoDrive implements Drive
         }
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
-
-        return $this->pdo = $this->pdo ?? new \PDO($dsn,$config['username'],$config['password']);
-
+        $pdo = $this->pdo = $this->pdo ?? new \PDO($dsn,$config['username'],$config['password']);
+        $pdo->exec("set names ".self::$charset);
+        return $pdo;
     }
 
     /**
@@ -31,6 +32,10 @@ class MysqlPdoDrive implements Drive
     public function setConfig(Config $Config)
     {
         $this->Config = $Config;
+    }
+
+    public function setCharset($charset = 'utf8'){
+        self::$charset = $charset;
     }
 
     public function testConnect()
@@ -55,5 +60,11 @@ class MysqlPdoDrive implements Drive
         }
 
         return [];
+    }
+
+    public function getConfig():config
+    {
+        // TODO: Implement getConfig() method.
+        return $this->Config;
     }
 }
