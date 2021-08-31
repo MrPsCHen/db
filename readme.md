@@ -1,10 +1,10 @@
-###PHP DB查询库
-#####create：2021-8-27
-#####version：0.1.0 
-#####description
+### PHP DB查询库
+##### create：2021-8-27
+##### version：0.1.0 
+##### description
 关于DB查询库，其用法主要模仿至TP，从中在使用细节上做了一些优化，特别简化了where的条件生成，
 并增强了多表查询的优化
-######环境要求
+###### 环境要求
 `mysql: >=5.7`
 `php: >=7.4`
     
@@ -23,15 +23,15 @@
 常用方法
 1. `toArray` 与TP一样，获得select 数组结果集
 
-######基本查询
+###### 基本查询
     $db = \EasyDb\Db::table('user');
     $db->where(["id"=>1])->select();
-######AND
+###### AND
     $db->where(["id"=>1,"name"=>"john"])->select();
 * SELECT * FROM user WHERE id=1 AND name=2
 
 传入数组，元素不被数组包裹的情况下，为AND连接
-######OR
+###### OR
     $db->where(["id"=>1,["name"=>"john"]])->select();
 * SELECT * FROM user WHERE id=1 OR name="john"
 
