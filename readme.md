@@ -10,14 +10,10 @@
     
 ### 初始化
 ######
-    //静态设置 配置对象    
-    $config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
-    
-    //静态获取 驱动对象
-    $drive  = new \EasyDb\Drive\MysqlPdoDrive();
-    
-    //注入配置和驱动
-    \EasyDb\Db::setConfig($config);
+    $config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');//静态设置 配置对象
+    $drive  = new \EasyDb\Drive\MysqlPdoDrive();//静态获取 驱动对象
+
+    \EasyDb\Db::setConfig($config);//注入配置和驱动
     \EasyDb\Db::setDrive($drive);
 ######
 
