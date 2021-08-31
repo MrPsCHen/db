@@ -23,15 +23,15 @@
 常用方法
 1. `toArray` 与TP一样，获得select 数组结果集
 
-######基本查询:
+######基本查询
     $db = \EasyDb\Db::table('user');
     $db->where(["id"=>1])->select();
-######AND：
+######AND
     $db->where(["id"=>1,"name"=>"john"])->select();
 * SELECT * FROM user WHERE id=1 AND name=2
 
 传入数组，元素不被数组包裹的情况下，为AND连接
-######OR：
+######OR
     $db->where(["id"=>1,["name"=>"john"]])->select();
 * SELECT * FROM user WHERE id=1 OR name="john"
 
@@ -43,12 +43,7 @@
 * SELECT * FROM user WHERE id=1 OR (name="john" AND id=1 )
 
 当查询条件被<font color=red>双层</font>数组包裹时，这将进行 "()" 包裹起来
-  
 
-#
-#
-#
-#
 
 
 
