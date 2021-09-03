@@ -44,9 +44,10 @@
 
 当查询条件被<font color=red>双层</font>数组包裹时，这将进行 "()" 包裹起来
 
-
-
-
+###### JOIN
+    $db->where(["id"=1,[["name"=>"john","id"=>1]]]);
+    $db->join('group','`group`.`id` = `user`.`group_id`');
+    
 
 
 

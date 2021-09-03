@@ -15,8 +15,9 @@ class Query
     protected static string $sql_2  = 'FROM [$TABLE] ';
     protected static string $sql_3  = 'WHERE [$WHERE] ';
     protected static string $sql_4  = '[$JOIN_TYPE] [$JOIN_TABLE] ON [$JOIN_ON] ';
-//    protected static string $sql_4  = 'GROUP BY [$GROUP_BY] ';
-//    protected static string $sql_5  = 'ORDER BY [$ORDER_BY] ';
+    protected static string $sql_5  = 'GROUP BY [$GROUP_BY] ';
+    protected static string $sql_6  = 'ORDER BY [$ORDER_BY] ';
+    protected static string $sql_7  = 'LIMIT [$idx],[$len] ';
     protected static ?array $table_structure = [];
 //    protected static        $input_field;
     /**
@@ -26,6 +27,9 @@ class Query
     protected static string $modem_field    = '*';
     protected static array  $modem_join     = [];
     protected static ?array $join_field     = [];
+    protected static ?array $modem_limit    = [];
+    protected static ?array $modem_group    = [];
+    protected static ?array $modem_order    = [];
 
     public function __construct($table)
     {
@@ -36,16 +40,50 @@ class Query
     public function select(): ?Query
     {
         self::getTableStructure();
-
         $sql = self::formatField();
         $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
         $sql.= self::formatJoin();
         $sql.= self::formatWhere();
+        $sql.= self::formatGroup();
+        $sql.= self::formatOrder();
+        $sql.= self::formatLimit();
 
         if(self::$drive){
             self::$back = self::$drive->baseQuery($sql);
         }
         return $this;
+    }
+
+    public function find():?Query
+    {
+
+        self::getTableStructure();
+        $sql = self::formatField();
+        $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
+        $sql.= self::formatJoin();
+        $sql.= self::formatWhere();
+        $sql.= " LIMIT 0,1";
+        if(self::$drive){
+            self::$back = self::$drive->baseQuery($sql);
+        }
+        return $this;
+
+    }
+
+    public function count(string $field = '*'):int
+    {
+        self::getTableStructure();
+        $sql = 'SELECT count('.$field.") AS `db_count`";
+        $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
+        $sql.= self::formatJoin();
+        $sql.= self::formatWhere();
+
+        if(self::$drive){
+            $result = self::$drive->baseQuery($sql);
+            $result = reset($result);
+            return $result['db_count'];
+        }
+        return -1;
     }
 
     protected static function getTableStructure(?string $table = null)
@@ -77,27 +115,42 @@ class Query
         return self::$back;
     }
 
-
     public function where($condition = null): Query
     {
         self::$modem_where = $condition;
         return $this;
     }
 
-//    public function orderBy()
-//    {
+    /**
+     * @param $field array|string
+     * @return $this
+     */
+    public function orderBy($field,$sort = 'ASC')
+    {
+        if(!empty($field)){
+            if(is_string($field)){
+                self::$modem_order[$field] = $sort;
+            }else if (is_array($field)) {
+                array_merge(self::$modem_order, $field);
+            }
+        }
+        return $this;
+
+    }
 //
-//    }
+    public function groupBy($field): Query
+    {
+        if(!empty($field)){
+            self::$modem_group = is_string($field)?[$field]:$field;
+        }
+        return $this;
+    }
 //
-//    public function groupBy()
-//    {
-//
-//    }
-//
-//    public function limit()
-//    {
-//
-//    }
+    public function limit(int $index,int $length): Query
+    {
+        self::$modem_limit = [$index,$length];
+        return $this;
+    }
 
     public function join($table = '',$on = '',$join_type = 'LEFT JOIN'): Query
     {
@@ -137,10 +190,7 @@ class Query
 //        return $this;
 //    }
 
-//    public function count():int
-//    {
-//
-//    }
+
 
 //    public function find():Query
 //    {
@@ -190,13 +240,14 @@ class Query
                     $flag = true;
                 }
                 $_where.= self::_deep_formatWhere($values[$i],$flag);
-
             }
             isset($values[$i+1]) &&($_where.= is_array($values[$i+1])?'OR ':'AND ');
         }
 
         return $pack_flag?"($_where) ":$_where;
     }
+
+
     protected static function _formatField(string $field_name)
     {
         foreach (self::$table_structure as $v)
@@ -204,13 +255,6 @@ class Query
             if(isset($v[$field_name]))return $v[$field_name];
         }
         return $field_name;
-
-    }
-    protected static function _outField()
-    {
-        $field = [];
-        var_export(self::$join_field);
-        exit;
 
     }
 
@@ -221,7 +265,40 @@ class Query
     protected static function formatField()
     {
         $out_field = implode(',',self::$join_field);
+        if(empty($out_field))return '*';
         return str_replace('[$FIELD]',empty($out_field)?self::$modem_field:$out_field,self::$sql_1);
+    }
+
+
+    protected static function formatGroup()
+    {
+        $out_field = implode(',',self::$modem_group);
+        if(empty($out_field))return '';
+        return str_replace('[$GROUP_BY]',$out_field,self::$sql_5);
+
+    }
+
+    protected static function formatLimit()
+    {
+        if( !isset(self::$modem_limit[0])||
+            !isset(self::$modem_limit[1])||
+            !is_numeric(self::$modem_limit[0])||
+            !is_numeric(self::$modem_limit[1]) )
+        {
+            return '';
+        }else{
+            return str_replace(['[$idx]','[$len]'],self::$modem_limit,self::$sql_7);
+        }
+    }
+
+    protected static function formatOrder()
+    {
+        $out_field = '';
+        foreach (self::$modem_order as $key=>$val)
+        {
+            $out_field.= "`$key` $val";
+        }
+        return str_replace('[$ORDER_BY]',$out_field,self::$sql_6);
     }
 
 
