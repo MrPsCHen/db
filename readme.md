@@ -10,7 +10,7 @@
 
 安装
 
-    composer require doit/db 
+    composer require doit/db dev-master
     
 ### 初始化
 ######
@@ -39,7 +39,7 @@
     $db->where(["id"=>1,["name"=>"john"]])->select();
 * SELECT * FROM user WHERE id=1 OR name="john"
 
-是否为OR 或 AND 取决于是否被<font color=red>单层</font>数组包裹
+跟随条件<font color=red>单层</font>数组包裹，将变为OR
 
 
 ###### 括号优先级
