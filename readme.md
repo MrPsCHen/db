@@ -7,6 +7,10 @@
 ###### 环境要求
 `mysql: >=5.7`
 `php: >=7.4`
+
+安装
+
+    composer require doit/db 
     
 ### 初始化
 ######

@@ -18,7 +18,6 @@
     ],
     "minimum-stability": "dev",
     "require": {
-      "ext-pdo": "*",
-        "easyswoole/swoole-ide-helper": "dev-master"
+      "ext-pdo": "*"
     }
 }

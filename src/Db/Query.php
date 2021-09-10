@@ -125,13 +125,13 @@ class Query
      * @param $field array|string
      * @return $this
      */
-    public function orderBy($field,$sort = 'ASC')
+    public function orderBy($field,$sort = 'ASC'): Query
     {
         if(!empty($field)){
             if(is_string($field)){
                 self::$modem_order[$field] = $sort;
             }else if (is_array($field)) {
-                array_merge(self::$modem_order, $field);
+                self::$modem_order = array_merge(self::$modem_order, $field);
             }
         }
         return $this;
