@@ -11,6 +11,7 @@ class Query
     const LEFT_JOIN = 'LEFT JOIN';
     const RIGHT_JOIN= 'RIGHT JOIN';
     const INNER_JOIN= 'INNER JOIN';
+    protected static int $query_flag= 1;//1.select,2.update,3.insert,4.delete
     protected static string $table  = '';
     protected static ?Drive $drive  = null;
     protected static ?array $back   = null;
@@ -21,8 +22,8 @@ class Query
     protected static string $sql_5  = 'GROUP BY [$GROUP_BY] ';
     protected static string $sql_6  = 'ORDER BY [$ORDER_BY] ';
     protected static string $sql_7  = 'LIMIT [$idx],[$len] ';
-    protected static ?array $table_structure = [];
-//    protected static        $input_field;
+    protected static ?array $table_structure= [];
+    protected static  array $table_field    = [];
     /**
      * @var string|array
      */
@@ -42,6 +43,7 @@ class Query
 
     public function select(): ?Query
     {
+        self::$query_flag = 1;
         self::getTableStructure();
         $sql = self::formatField();
         $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
@@ -95,17 +97,16 @@ class Query
         $table          = empty($table)?(self::$table):$table;
         $table_structure= self::$drive->baseQuery("SHOW FULL COLUMNS FROM `$database`.`$table`");
         $field_mapping  = [];
-        for ($i=0;$i<count($table_structure);$i++)
-        {
-            $field_mapping[$table][$table_structure[$i]['Field']]="`$table`.`{$table_structure[$i]['Field']}`";
-
-            $prefix = self::$table == $table?'':"{$table}_";
-            $field  = "`$table`.`{$table_structure[$i]['Field']}`";
-            $alias  = "{$prefix}{$table_structure[$i]['Field']}";
+        !isset($table_field[$table]) && (self::$table_field[$table] = []);
+        for ($i = 0; $i < count($table_structure); $i++) {
+            $field_mapping[$table][$table_structure[$i]['Field']] = "`$table`.`{$table_structure[$i]['Field']}`";
+            $prefix = self::$table == $table ? '' : "{$table}_";
+            $field = "`$table`.`{$table_structure[$i]['Field']}`";
+            $alias = "{$prefix}{$table_structure[$i]['Field']}";
             self::$join_field[$alias] = "$field AS `$alias`";
+            self::$table_field[$table][]= $table_structure[$i]['Field'];
         }
-        self::$table_structure = array_merge(self::$table_structure,$field_mapping);
-
+        self::$table_structure = array_merge(self::$table_structure, $field_mapping);
     }
 
     /**
@@ -233,7 +234,7 @@ class Query
         for($i=0;$i<count($option);$i++)
         {
             if(is_string($values[$i]) || is_numeric($values[$i])){
-                $field = self::_formatField($keys[$i]);
+                $field = self::$query_flag == 1?self::_formatField($keys[$i]):$keys[$i];
                 $_where.= is_numeric($values[$i]) ?"$field=$values[$i] ":"$field=\"$values[$i]\" ";
             }else{
                 $flag = false;
