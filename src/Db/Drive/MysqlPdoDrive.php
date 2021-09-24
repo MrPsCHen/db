@@ -58,7 +58,6 @@ class MysqlPdoDrive implements Drive
         if($instance->execute()){
             return $instance->fetchAll(\PDO::FETCH_ASSOC);
         }
-
         return [];
     }
 

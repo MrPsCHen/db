@@ -15,6 +15,7 @@ class Table
     public function __construct($table = '',$prefix = '',$option = [])
     {
 
+
     }
 
     public static function set(){

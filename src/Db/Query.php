@@ -8,6 +8,9 @@ use EasyDb\Drive\Drive;
 
 class Query
 {
+    const LEFT_JOIN = 'LEFT JOIN';
+    const RIGHT_JOIN= 'RIGHT JOIN';
+    const INNER_JOIN= 'INNER JOIN';
     protected static string $table  = '';
     protected static ?Drive $drive  = null;
     protected static ?array $back   = null;
@@ -47,7 +50,6 @@ class Query
         $sql.= self::formatGroup();
         $sql.= self::formatOrder();
         $sql.= self::formatLimit();
-
         if(self::$drive){
             self::$back = self::$drive->baseQuery($sql);
         }
@@ -56,7 +58,6 @@ class Query
 
     public function find():?Query
     {
-
         self::getTableStructure();
         $sql = self::formatField();
         $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
@@ -88,19 +89,19 @@ class Query
 
     protected static function getTableStructure(?string $table = null)
     {
+
         $config         = self::$drive->getConfig()->out();
         $database       = $config['database'];
         $table          = empty($table)?(self::$table):$table;
         $table_structure= self::$drive->baseQuery("SHOW FULL COLUMNS FROM `$database`.`$table`");
-
         $field_mapping  = [];
         for ($i=0;$i<count($table_structure);$i++)
         {
             $field_mapping[$table][$table_structure[$i]['Field']]="`$table`.`{$table_structure[$i]['Field']}`";
 
-            $preifx = self::$table == $table?'':"{$table}_";
+            $prefix = self::$table == $table?'':"{$table}_";
             $field  = "`$table`.`{$table_structure[$i]['Field']}`";
-            $alias  = "{$preifx}{$table_structure[$i]['Field']}";
+            $alias  = "{$prefix}{$table_structure[$i]['Field']}";
             self::$join_field[$alias] = "$field AS `$alias`";
         }
         self::$table_structure = array_merge(self::$table_structure,$field_mapping);
@@ -152,7 +153,7 @@ class Query
         return $this;
     }
 
-    public function join($table = '',$on = '',$join_type = 'LEFT JOIN'): Query
+    public function join($table = '',$on = '',$join_type = self::LEFT_JOIN): Query
     {
         ///数据表规范
         ///1.关联表.主键id = 主查询表.关联字段
@@ -297,6 +298,9 @@ class Query
         foreach (self::$modem_order as $key=>$val)
         {
             $out_field.= "`$key` $val";
+        }
+        if(empty($out_field)){
+            return '';
         }
         return str_replace('[$ORDER_BY]',$out_field,self::$sql_6);
     }
