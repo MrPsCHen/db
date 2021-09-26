@@ -16,4 +16,5 @@ $user = new user();
 //} catch (\EasyDb\Exception\DbException $e) {
 //}
 //$user->where(['id'=>2])->update(['username'=>'powwow']);
-$user->insert(['username'=>'username','password'=>'password']);
+$password = password_hash(md5('admin'),PASSWORD_BCRYPT );
+var_dump($user->insert(['nickname'=>'管理员','username'=>'username','password'=>$password]));

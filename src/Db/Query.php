@@ -38,15 +38,20 @@ class Query
     public function __construct($table)
     {
         self::$table = $table;
+
     }
 
+    private static function formatTable()
+    {
+        return str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
+    }
 
     public function select(): ?Query
     {
         self::$query_flag = 1;
         self::getTableStructure();
         $sql = self::formatField();
-        $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
+        $sql.= self::formatTable();
         $sql.= self::formatJoin();
         $sql.= self::formatWhere();
         $sql.= self::formatGroup();
@@ -267,7 +272,7 @@ class Query
     protected static function formatField()
     {
         $out_field = implode(',',self::$join_field);
-        if(empty($out_field))return '*';
+        if(empty($out_field))return 'SELECT * ';
         return str_replace('[$FIELD]',empty($out_field)?self::$modem_field:$out_field,self::$sql_1);
     }
 

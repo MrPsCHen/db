@@ -46,8 +46,8 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 #group
 $ins = \EasyDb\Db::table('user');
 
-$ins->groupBy(['name'])->orderBy('id','DESC')->select();
-var_dump($ins->toArray());
+$ins->select();
+var_export($ins->toArray());
 
 
 

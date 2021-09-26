@@ -53,9 +53,8 @@ class MysqlPdoDrive implements Drive
     public function baseQuery(string $sql): array
     {
         self::connect();
-        $instance = $this->pdo->prepare($sql);
-
-        if($instance->execute()){
+        $instance = $this->pdo->query($sql);
+        if($instance){
             return $instance->fetchAll(PDO::FETCH_ASSOC);
         }
         return [];
