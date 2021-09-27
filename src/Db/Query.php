@@ -72,7 +72,8 @@ class Query
         $sql.= self::formatWhere();
         $sql.= " LIMIT 0,1";
         if(self::$drive){
-            self::$back = self::$drive->baseQuery($sql);
+            $back = self::$drive->baseQuery($sql);
+            self::$back = reset($back);
         }
         return $this;
 
@@ -169,6 +170,12 @@ class Query
         return $this;
     }
 
+    public function page(int $pagination,int $row): Query
+    {
+        self::$modem_limit = [($pagination-1)*$row,$row];
+        return $this;
+    }
+
 //    public function extra()
 //    {
 //
@@ -203,6 +210,7 @@ class Query
 //    {
 //
 //    }
+
 
 
     public static function bind(Drive $drive,$table): Query
