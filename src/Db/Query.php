@@ -170,7 +170,12 @@ class Query
         return $this;
     }
 
-    public function page(int $pagination,int $row): Query
+    /**
+     * @param int $pagination 页码
+     * @param int $row 每页行数
+     * @return $this
+     */
+    public function page(int $pagination, int $row): Query
     {
         self::$modem_limit = [($pagination-1)*$row,$row];
         return $this;
