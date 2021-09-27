@@ -60,6 +60,7 @@ class Query
         if(self::$drive){
             self::$back = self::$drive->baseQuery($sql);
         }
+        self::clearParam();
         return $this;
     }
 
@@ -75,6 +76,7 @@ class Query
             $back = self::$drive->baseQuery($sql);
             self::$back = reset($back);
         }
+        self::clearParam();
         return $this;
 
     }
@@ -337,6 +339,19 @@ class Query
     }
 
 
+    /**
+     * 清理参数
+     */
+    protected static function clearParam()
+    {
+        self::$modem_where    = '';
+        self::$modem_field    = '*';
+        self::$modem_join     = [];
+        self::$join_field     = [];
+        self::$modem_limit    = [];
+        self::$modem_group    = [];
+        self::$modem_order    = [];
+    }
 
 
 
