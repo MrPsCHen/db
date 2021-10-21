@@ -33,9 +33,11 @@ class Db
 
     /**
      * @return Drive\Drive
+     * @throws \EasyDb\Exception\DbException
      */
     public static function getDrive(): Drive\Drive
     {
+        if(!isset(self::$drive))throw new DbException('未初始化');
         return self::$drive;
     }
 

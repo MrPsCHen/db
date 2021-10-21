@@ -55,7 +55,7 @@ class Builder extends Query
         if(self::$drive->executeQuery($sql,[])){
             return (self::$drive)::getAffectedRows();
         }else{
-            return -1;
+            return -2;
         }
 
     }

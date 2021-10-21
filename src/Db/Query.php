@@ -353,6 +353,14 @@ class Query
         self::$modem_order    = [];
     }
 
+    /**
+     * @param string $table
+     */
+    public function setTable(string $table): void
+    {
+        self::$table = $table;
+    }
+
 
 
 
