@@ -8,10 +8,13 @@ use PDO;
 
 class MysqlPdoDrive implements Drive
 {
-    protected Config $Config;
-    protected PDO  $pdo;
-    protected static string $charset = 'utf8';
-    protected static int $affected_rows = 0;
+    protected           Config  $Config;
+    protected           PDO     $pdo;
+    protected static    string  $charset        = 'utf8';
+    protected static    int     $affected_rows  = 0;
+
+    protected static    string  $error_msg      = '';
+    protected static    string  $error_code     = '0';
 
     /**
      * @throws DbException
@@ -42,9 +45,7 @@ class MysqlPdoDrive implements Drive
 
     public function testConnect(): bool
     {
-//        $config = $this->Config->out();
-//        $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
-        return false;
+        return true;
     }
 
     /**
@@ -65,14 +66,16 @@ class MysqlPdoDrive implements Drive
      */
     public function executeQuery(string $sql, array $array): bool
     {
-        self::$affected_rows = 0;
         self::connect();
-        $instance = $this->pdo->prepare($sql);
-        if($instance->execute()){
-            self::$affected_rows = $instance->rowCount();
-            return true;
-        }
-        return false;
+        self::$affected_rows    = 0;
+        self::$error_msg        = '';
+        self::$error_code       = 0;
+        $instance               = $this->pdo->prepare($sql);
+        $back                   = $instance->execute();
+        self::$affected_rows    = $instance->rowCount();
+        self::$error_code       = $instance->errorCode();
+        self::$error_msg        = json_encode($instance->errorInfo());
+        return $back;
     }
     public function getConfig():config
     {
@@ -87,6 +90,19 @@ class MysqlPdoDrive implements Drive
         return self::$affected_rows;
     }
 
+    public static function getErrorCode(): int
+    {
+        // TODO: Implement getErrorCode() method.
+        if(is_numeric(self::$error_code)){
+            return (int)self::$error_code;
+        }else {
+            return -2;
+        }
+    }
 
-
+    public static function getErrorMessage(): string
+    {
+        // TODO: Implement getErrorMessage() method.
+        return self::$error_msg;
+    }
 }
