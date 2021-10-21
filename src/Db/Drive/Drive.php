@@ -15,6 +15,6 @@ interface Drive
     public          function baseQuery(string $sql);
     public          function executeQuery(string $sql , array $array):bool;
     public static   function getAffectedRows():int;
-    public static   function getErrorCode():string;
+    public static   function getErrorCode():int;
     public static   function getErrorMessage():string;
 }

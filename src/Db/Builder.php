@@ -79,7 +79,7 @@ class Builder extends Query
     }
 
 
-    public function getErrorCode(): string
+    public function getErrorCode(): int
     {
         return (self::$drive)::getErrorCode();
     }

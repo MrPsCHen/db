@@ -55,9 +55,10 @@ $drive->setConfig($config);
 
 $mode = new \EasyDb\Model();
 $mode->setTable('user');
-var_export($mode->insert(['nickname'=>1]));
-
+var_export($mode->insert(['nickname'=>'admin','username'=>"admin3"]));
+echo "\n";
 var_export($mode->getErrorCode());
+echo "\n";
 var_export($mode->getErrorMsg());
 
 
