@@ -57,6 +57,8 @@ $mode = new \EasyDb\Model();
 $mode->setTable('user');
 var_export($mode->insert(['nickname'=>1]));
 
+var_export($mode->getErrorCode());
+var_export($mode->getErrorMsg());
 
 
 

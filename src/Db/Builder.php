@@ -57,7 +57,6 @@ class Builder extends Query
         }else{
             return -2;
         }
-
     }
 
     /**
@@ -79,6 +78,16 @@ class Builder extends Query
 
     }
 
+
+    public function getErrorCode(): string
+    {
+        return (self::$drive)::getErrorCode();
+    }
+
+    public function getErrorMsg(): string
+    {
+        return (self::$drive)::getErrorMessage();
+    }
 
 
 

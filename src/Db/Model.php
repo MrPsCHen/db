@@ -6,6 +6,9 @@ namespace EasyDb;
 
 class Model extends Builder
 {
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
     public function __construct()
     {
         parent::$drive = Db::getDrive();
