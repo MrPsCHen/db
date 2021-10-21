@@ -32,10 +32,11 @@ class Builder extends Query
 
     /**
      * @param array $array
+     * @return int
      */
-    public function insert(array $array)
+    public function insert(array $array): int
     {
-        if(empty($array))return;
+        if(empty($array))return -1;
         if(is_numeric(array_keys($array)[0])){
             var_dump(self::$table_field);
         }else{
@@ -47,15 +48,15 @@ class Builder extends Query
                 $sql_insert_2.=',';
             }
             self::$sql_insert_2 = '('.rtrim($sql_insert_2,',').')';
-//            echo rtrim($sql_insert_2,',');
-//            echo "\n";
-//            echo '`'.implode('`,`',array_keys($array)).'`';
-
         }
         $sql = str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_insert_1);
         $sql.= '('.'`'.implode('`,`',array_keys($array)).'`)';
         $sql.= ' VALUE'.self::$sql_insert_2;
-        return self::$drive->executeQuery($sql,[]);
+        if(self::$drive->executeQuery($sql,[])){
+            return (self::$drive)::getAffectedRows();
+        }else{
+            return -1;
+        }
 
     }
 

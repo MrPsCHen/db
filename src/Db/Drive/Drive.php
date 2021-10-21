@@ -13,6 +13,6 @@ interface Drive
     public function connect();
     public function testConnect();
     public function baseQuery(string $sql);
-    public function executeQuery(string $sql , array $array);
-
+    public function executeQuery(string $sql , array $array):bool;
+    public static function getAffectedRows():int;
 }
