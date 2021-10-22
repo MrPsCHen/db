@@ -114,7 +114,7 @@ class Query
             $field_mapping[$table][$table_structure[$i]['Field']] = "`$table`.`{$table_structure[$i]['Field']}`";
             $prefix = self::$table == $table ? '' : "{$table}_";
             $field = "`$table`.`{$table_structure[$i]['Field']}`";
-            $alias = "{$prefix}{$table_structure[$i]['Field']}";
+            $alias = "$prefix{$table_structure[$i]['Field']}";
             self::$join_field[$alias] = "$field AS `$alias`";
             self::$table_field[$table][]= $table_structure[$i]['Field'];
         }
@@ -193,15 +193,20 @@ class Query
 //    }
 
 
-
+    /**
+     * 设置显示字段
+     * @param $field
+     * @return $this
+     */
     public function field($field): Query
     {
-        if(is_string($field)) {
-            self::$modem_field = explode(',', $field);
-        }else{
-            self::$modem_field = $field;
+        if(is_array($field)){
+            $field = implode(',',$field);
         }
-
+        if(empty($field)){
+            $field = '*';
+        }
+        self::$modem_field  =$field;
         return $this;
     }
 
@@ -296,7 +301,7 @@ class Query
      */
     protected static function formatField()
     {
-        $out_field = implode(',',self::$join_field);
+        ///TODO 这里添加字段验证
         if(empty($out_field))return 'SELECT * ';
         return str_replace('[$FIELD]',empty($out_field)?self::$modem_field:$out_field,self::$sql_1);
     }

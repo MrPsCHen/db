@@ -92,7 +92,6 @@ class MysqlPdoDrive implements Drive
 
     public static function getErrorCode(): int
     {
-        // TODO: Implement getErrorCode() method.
         if(is_numeric(self::$error_code)){
             return (int)self::$error_code;
         }else {
@@ -102,7 +101,6 @@ class MysqlPdoDrive implements Drive
 
     public static function getErrorMessage(): string
     {
-        // TODO: Implement getErrorMessage() method.
         return self::$error_msg;
     }
 }

@@ -15,7 +15,6 @@ class MysqlConfig implements Config
     public function __toString()
     {
         return $this->host;
-        // TODO: Implement __toString() method.
     }
 
     /**
