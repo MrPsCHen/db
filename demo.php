@@ -67,7 +67,7 @@ $drive->setConfig($config);
 
 $user = \EasyDb\Db::table('user');
 
-var_export($user->where(['username'=>'admin11'])->find()->toArray());
+var_export($user->field(['username'])->where(['username'=>'admin'])->find()->toArray());
 
 
 

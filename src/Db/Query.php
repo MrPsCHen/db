@@ -28,7 +28,7 @@ class Query
      * @var string|array
      */
     protected static        $modem_where    = '';
-    protected static string $modem_field    = '*';
+    protected static        $modem_field    = '*';
     protected static array  $modem_join     = [];
     protected static ?array $join_field     = [];
     protected static ?array $modem_limit    = [];
@@ -37,8 +37,8 @@ class Query
 
     public function __construct($table)
     {
-        self::$table = $table;
 
+        self::$table = $table;
     }
 
     private static function formatTable()
@@ -201,7 +201,7 @@ class Query
     public function field($field): Query
     {
         if(is_array($field)){
-            $field = implode(',',$field);
+            $field = '`'.implode('`,`',$field).'`';
         }
         if(empty($field)){
             $field = '*';
@@ -209,30 +209,6 @@ class Query
         self::$modem_field  =$field;
         return $this;
     }
-
-//    public function inc()
-//    {
-//
-//    }
-
-//    public function dec()
-//    {
-//
-//    }
-
-//    public function build(): Query
-//    {
-//        self::$build = true;
-//        return $this;
-//    }
-
-
-
-//    public function find():Query
-//    {
-//
-//    }
-
 
 
     public static function bind(Drive $drive,$table): Query
@@ -287,6 +263,7 @@ class Query
 
     protected static function _formatField(string $field_name)
     {
+
         foreach (self::$table_structure as $v)
         {
             if(isset($v[$field_name]))return $v[$field_name];
@@ -301,9 +278,12 @@ class Query
      */
     protected static function formatField()
     {
+
         ///TODO 这里添加字段验证
-        if(empty($out_field))return 'SELECT * ';
-        return str_replace('[$FIELD]',empty($out_field)?self::$modem_field:$out_field,self::$sql_1);
+
+        if(empty(self::$modem_field))return 'SELECT * ';
+
+        return str_replace('[$FIELD]',self::$modem_field,self::$sql_1);
     }
 
 
