@@ -74,7 +74,11 @@ class Query
         $sql.= " LIMIT 0,1";
         if(self::$drive){
             $back = self::$drive->baseQuery($sql);
-            self::$back = reset($back);
+            if(empty($back)){
+                self::$back = null;
+            }else{
+                self::$back = reset($back);
+            }
         }
         self::clearParam();
         return $this;
