@@ -194,10 +194,16 @@ class Query
 
 
 
-//    public function field()
-//    {
-//
-//    }
+    public function field($field): Query
+    {
+        if(is_string($field)) {
+            self::$modem_field = explode(',', $field);
+        }else{
+            self::$modem_field = $field;
+        }
+
+        return $this;
+    }
 
 //    public function inc()
 //    {
