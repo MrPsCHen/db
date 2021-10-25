@@ -1,12 +1,19 @@
 <?php
 
 include "./vendor/autoload.php";
-$db = new \EasyDb\Db();
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+///初始化配置
+$db     = new \EasyDb\Db();
 $config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
-$drive->setConfig($config);
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
+
+
+
+
+
 ////
 ////try {
 ////    $db->testConnect();

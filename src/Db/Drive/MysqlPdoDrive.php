@@ -9,7 +9,7 @@ use PDO;
 class MysqlPdoDrive implements Drive
 {
     protected           Config  $Config;
-    protected           PDO     $pdo;
+    protected           ?PDO    $pdo            = null;
     protected static    string  $charset        = 'utf8';
     protected static    int     $affected_rows  = 0;
 
@@ -19,16 +19,23 @@ class MysqlPdoDrive implements Drive
     /**
      * @throws DbException
      */
-    public function connect(): PDO
+    public function connect(): ?PDO
     {
         if(!$this->Config){
             throw new DbException();
         }
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
-        $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
-        $pdo->exec("set names ".self::$charset);
-        return $pdo;
+        try {
+            $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
+            $pdo->exec("set names ".self::$charset);
+            return $pdo;
+        }catch (\PDOException $e) {
+//            var_dump($e);
+            echo "";
+        }
+
+        return null;
     }
 
     /**
@@ -54,11 +61,15 @@ class MysqlPdoDrive implements Drive
     public function baseQuery(string $sql): array
     {
         self::connect();
-        $instance = $this->pdo->query($sql);
-        if($instance){
-            return $instance->fetchAll(PDO::FETCH_ASSOC);
+        if($this->pdo){
+            $instance = $this->pdo->query($sql);
+            if($instance){
+                return $instance->fetchAll(PDO::FETCH_ASSOC);
+            }
+            return [];
+        }else{
+            throw new DbException('not connection');
         }
-        return [];
     }
 
     /**

@@ -278,9 +278,7 @@ class Query
      */
     protected static function formatField()
     {
-
         ///TODO 这里添加字段验证
-
         if(empty(self::$modem_field))return 'SELECT * ';
 
         return str_replace('[$FIELD]',self::$modem_field,self::$sql_1);
