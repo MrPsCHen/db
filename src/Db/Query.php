@@ -285,6 +285,9 @@ class Query
     }
 
 
+    /**
+     * @return array|string|string[]
+     */
     protected static function formatGroup()
     {
         $out_field = implode(',',self::$modem_group);

@@ -16,7 +16,4 @@ class Model extends Builder
         parent::getTableStructure(self::$table);
     }
 
-
-
-
 }
