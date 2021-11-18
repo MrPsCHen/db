@@ -74,7 +74,7 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 
 $user = \EasyDb\Db::table('user');
 
-var_export($user->field(['username'])->where(['username'=>'admin'])->find()->toArray());
+var_export($user->field(['username'])->where(['username'=>'admin'])->buildSql()->find());
 
 
 

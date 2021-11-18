@@ -5,6 +5,7 @@ namespace EasyDb\Drive;
 use EasyDb\Config\config;
 use EasyDb\Exception\DbException;
 use PDO;
+use PDOException;
 
 class MysqlPdoDrive implements Drive
 {
@@ -12,7 +13,6 @@ class MysqlPdoDrive implements Drive
     protected           ?PDO    $pdo            = null;
     protected static    string  $charset        = 'utf8';
     protected static    int     $affected_rows  = 0;
-
     protected static    string  $error_msg      = '';
     protected static    string  $error_code     = '0';
 
@@ -30,7 +30,7 @@ class MysqlPdoDrive implements Drive
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
             return $pdo;
-        }catch (\PDOException $e) {
+        }catch (PDOException $e) {
 //            var_dump($e);
             echo "";
         }
@@ -62,7 +62,9 @@ class MysqlPdoDrive implements Drive
     {
         self::connect();
         if($this->pdo){
-            $instance = $this->pdo->query($sql);
+            $instance           = $this->pdo->query($sql);
+            self::$error_code   = $this->pdo->errorCode();
+            self::$error_msg    = json_encode($this->pdo->errorInfo());
             if($instance){
                 return $instance->fetchAll(PDO::FETCH_ASSOC);
             }

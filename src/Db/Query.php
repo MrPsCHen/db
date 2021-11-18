@@ -8,6 +8,8 @@ use EasyDb\Drive\Drive;
 
 class Query
 {
+
+
     const LEFT_JOIN = 'LEFT JOIN';
     const RIGHT_JOIN= 'RIGHT JOIN';
     const INNER_JOIN= 'INNER JOIN';
@@ -34,6 +36,7 @@ class Query
     protected static ?array $modem_limit    = [];
     protected static ?array $modem_group    = [];
     protected static ?array $modem_order    = [];
+    protected static bool   $build_sql_flag = false;
 
     public function __construct($table)
     {
@@ -64,7 +67,7 @@ class Query
         return $this;
     }
 
-    public function find():?Query
+    public function find()
     {
         self::getTableStructure();
         $sql = self::formatField();
@@ -72,6 +75,9 @@ class Query
         $sql.= self::formatJoin();
         $sql.= self::formatWhere();
         $sql.= " LIMIT 0,1";
+        if(self::$build_sql_flag){
+            return $sql;
+        }
         if(self::$drive){
             $back = self::$drive->baseQuery($sql);
             if(empty($back)){
@@ -80,6 +86,9 @@ class Query
                 self::$back = reset($back);
             }
         }
+
+
+
         self::clearParam();
         return $this;
 
@@ -135,6 +144,7 @@ class Query
         return $this;
     }
 
+
     /**
      * @param $field array|string
      * @return $this
@@ -151,7 +161,11 @@ class Query
         return $this;
 
     }
-//
+
+    /**
+     * @param $field
+     * @return $this
+     */
     public function groupBy($field): Query
     {
         if(!empty($field)){
@@ -187,10 +201,14 @@ class Query
         return $this;
     }
 
-//    public function extra()
-//    {
-//
-//    }
+    /**
+     * 创建sql预期
+     */
+    public function buildSql(): Query
+    {
+        self::$build_sql_flag = true;
+        return $this;
+    }
 
 
     /**
@@ -226,14 +244,13 @@ class Query
         self::$drive = $drive;
     }
 
-
     protected static function formatWhere(): string
     {
         if(is_string(self::$modem_where))
             return self::$modem_where;
 
         if(is_array(self::$modem_where)){
-            return str_replace('[$WHERE]',self::_deep_formatWhere((array)self::$modem_where),self::$sql_3);
+            return rtrim(str_replace('[$WHERE]',self::_deep_formatWhere((array)self::$modem_where),self::$sql_3));
         }
         return '';
     }
