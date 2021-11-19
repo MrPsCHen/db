@@ -6,6 +6,7 @@ namespace EasyDb;
 
 use EasyDb\Drive\Drive;
 use EasyDb\Exception\DbException;
+use Exception;
 
 class Query
 {
@@ -24,7 +25,7 @@ class Query
     /**
      * @var string 数据表前缀
      */
-    protected   string  $prefix     = '';
+    protected   static  string  $prefix     = '';
     /**
      * @var array 查询字段
      */
@@ -105,13 +106,12 @@ class Query
     public function tableStruct(): Table
     {
         Table::setDrive(self::$drive);
-        return self::$table_struct = new Table(self::$table,$this->prefix);
+        return self::$table_struct = new Table(self::$table,self::$prefix);
     }
 
     /**
      * @param array|string $field 要显示的字段
      * @return $this
-     * @throws \EasyDb\Exception\DbException
      */
     public function field($field): Query
     {
@@ -142,7 +142,7 @@ class Query
                     throw new DbException('无法解析数据表结构');
                 }
             }
-        }catch (\Exception $exception){
+        }catch (Exception $exception){
 
         }
         return $this;
@@ -202,7 +202,6 @@ class Query
     {
         self::$table = $table;
         $this->tableStruct();
-        return;
     }
 
     /**
@@ -292,10 +291,7 @@ class Query
 
     private function getFullTableName():string
     {
-        $db = self::$drive->getConfig()->getDataBase();
-        $tb = self::$table;
-        return "`$db`.`$tb`";
-
+        return sprintf("`%s`.%s%s",self::$drive->getConfig()->getDataBase(),self::$prefix,self::$table);
     }
 
 
