@@ -17,4 +17,5 @@ interface Drive
     public static   function getAffectedRows():int;                         //影响行数
     public static   function getErrorCode():int;                            //错误代码
     public static   function getErrorMessage():string;                      //错误消息
+
 }

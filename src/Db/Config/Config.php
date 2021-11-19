@@ -4,8 +4,9 @@
 namespace EasyDb\Config;
 
 
-interface Config
+abstract class Config
 {
 
-    public function out();
+    abstract public function out();
+    abstract public function getDataBase():string;
 }

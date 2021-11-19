@@ -5,390 +5,298 @@ namespace EasyDb;
 
 
 use EasyDb\Drive\Drive;
+use EasyDb\Exception\DbException;
 
 class Query
 {
 
 
-    const LEFT_JOIN = 'LEFT JOIN';
-    const RIGHT_JOIN= 'RIGHT JOIN';
-    const INNER_JOIN= 'INNER JOIN';
-    protected static int $query_flag= 1;//1.select,2.update,3.insert,4.delete
-    protected static string $table  = '';
-    protected static ?Drive $drive  = null;
-    protected static ?array $back   = null;
-    protected static string $sql_1  = 'SELECT [$FIELD] ';
-    protected static string $sql_2  = 'FROM [$TABLE] ';
-    protected static string $sql_3  = 'WHERE [$WHERE] ';
-    protected static string $sql_4  = '[$JOIN_TYPE] [$JOIN_TABLE] ON [$JOIN_ON] ';
-    protected static string $sql_5  = 'GROUP BY [$GROUP_BY] ';
-    protected static string $sql_6  = 'ORDER BY [$ORDER_BY] ';
-    protected static string $sql_7  = 'LIMIT [$idx],[$len] ';
-    protected static ?array $table_structure= [];
-    protected static  array $table_field    = [];
+    public      static  bool    $debug          = true;
+
+    protected   static  ?Drive  $drive          = null;
+
+    protected   static  ?Table  $table_struct   = null;
+
     /**
-     * @var string|array
+     * @var string 数据表名称
      */
-    protected static        $modem_where    = '';
-    protected static        $modem_field    = '*';
-    protected static array  $modem_join     = [];
-    protected static ?array $join_field     = [];
-    protected static ?array $modem_limit    = [];
-    protected static ?array $modem_group    = [];
-    protected static ?array $modem_order    = [];
-    protected static bool   $build_sql_flag = false;
+    protected   static  string  $table      = '';
+    /**
+     * @var string 数据表前缀
+     */
+    protected   string  $prefix     = '';
+    /**
+     * @var array 查询字段
+     */
+    protected   array   $field      = [];
+    /**
+     * @var string
+     */
+    protected   string  $where      = '';
 
-    public function __construct($table)
+    protected   array   $limit      = [];
+    protected   array   $group      = [];
+    protected   array   $order      = [];
+
+    /**
+     * 查询条件
+     * @var array
+     */
+    protected   array   $conditions = [];
+
+    protected   array   $result     = [];
+
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
+    public static function bind(Drive $drive, $table): Query
     {
-
+        self::$drive = $drive;
         self::$table = $table;
-    }
-
-    private static function formatTable()
-    {
-        return str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
-    }
-
-    public function select(): ?Query
-    {
-        self::$query_flag = 1;
-        self::getTableStructure();
-        $sql = self::formatField();
-        $sql.= self::formatTable();
-        $sql.= self::formatJoin();
-        $sql.= self::formatWhere();
-        $sql.= self::formatGroup();
-        $sql.= self::formatOrder();
-        $sql.= self::formatLimit();
-        if(self::$drive){
-            self::$back = self::$drive->baseQuery($sql);
-        }
-        self::clearParam();
-        return $this;
-    }
-
-    public function find()
-    {
-        self::getTableStructure();
-        $sql = self::formatField();
-        $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
-        $sql.= self::formatJoin();
-        $sql.= self::formatWhere();
-        $sql.= " LIMIT 0,1";
-        if(self::$build_sql_flag){
-            return $sql;
-        }
-        if(self::$drive){
-            $back = self::$drive->baseQuery($sql);
-            if(empty($back)){
-                self::$back = null;
-            }else{
-                self::$back = reset($back);
-            }
-        }
-
-
-
-        self::clearParam();
-        return $this;
-
-    }
-
-    public function count(string $field = '*'):int
-    {
-        self::getTableStructure();
-        $sql = 'SELECT count('.$field.") AS `db_count`";
-        $sql.= str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_2);
-        $sql.= self::formatJoin();
-        $sql.= self::formatWhere();
-
-        if(self::$drive){
-            $result = self::$drive->baseQuery($sql);
-            $result = reset($result);
-            return $result['db_count'];
-        }
-        return -1;
-    }
-
-    protected static function getTableStructure(?string $table = null)
-    {
-
-        $config         = self::$drive->getConfig()->out();
-        $database       = $config['database'];
-        $table          = empty($table)?(self::$table):$table;
-        $table_structure= self::$drive->baseQuery("SHOW FULL COLUMNS FROM `$database`.`$table`");
-        $field_mapping  = [];
-        !isset($table_field[$table]) && (self::$table_field[$table] = []);
-        for ($i = 0; $i < count($table_structure); $i++) {
-            $field_mapping[$table][$table_structure[$i]['Field']] = "`$table`.`{$table_structure[$i]['Field']}`";
-            $prefix = self::$table == $table ? '' : "{$table}_";
-            $field = "`$table`.`{$table_structure[$i]['Field']}`";
-            $alias = "$prefix{$table_structure[$i]['Field']}";
-            self::$join_field[$alias] = "$field AS `$alias`";
-            self::$table_field[$table][]= $table_structure[$i]['Field'];
-        }
-        self::$table_structure = array_merge(self::$table_structure, $field_mapping);
-    }
-
-    /**
-     * @return array|null
-     */
-    public function toArray(): ?array
-    {
-        return self::$back;
-    }
-
-    public function where($condition = null): Query
-    {
-        self::$modem_where = $condition;
-        return $this;
-    }
-
-
-    /**
-     * @param $field array|string
-     * @return $this
-     */
-    public function orderBy($field,$sort = 'ASC'): Query
-    {
-        if(!empty($field)){
-            if(is_string($field)){
-                self::$modem_order[$field] = $sort;
-            }else if (is_array($field)) {
-                self::$modem_order = array_merge(self::$modem_order, $field);
-            }
-        }
-        return $this;
-
-    }
-
-    /**
-     * @param $field
-     * @return $this
-     */
-    public function groupBy($field): Query
-    {
-        if(!empty($field)){
-            self::$modem_group = is_string($field)?[$field]:$field;
-        }
-        return $this;
-    }
-//
-    public function limit(int $index,int $length): Query
-    {
-        self::$modem_limit = [$index,$length];
-        return $this;
-    }
-
-    public function join($table = '',$on = '',$join_type = self::LEFT_JOIN): Query
-    {
-        ///数据表规范
-        ///1.关联表.主键id = 主查询表.关联字段
-        ///2.主查询表.关联表 = [关联表名]_id
-        self::$modem_join[]=[$join_type,"`$table`",$on];
-        self::getTableStructure($table);
-        return $this;
-    }
-
-    /**
-     * @param int $pagination 页码
-     * @param int $row 每页行数
-     * @return $this
-     */
-    public function page(int $pagination, int $row): Query
-    {
-        self::$modem_limit = [($pagination-1)*$row,$row];
-        return $this;
-    }
-
-    /**
-     * 创建sql预期
-     */
-    public function buildSql(): Query
-    {
-        self::$build_sql_flag = true;
-        return $this;
-    }
-
-
-    /**
-     * 设置显示字段
-     * @param $field
-     * @return $this
-     */
-    public function field($field): Query
-    {
-        if(is_array($field)){
-            $field = '`'.implode('`,`',$field).'`';
-        }
-        if(empty($field)){
-            $field = '*';
-        }
-        self::$modem_field  =$field;
-        return $this;
-    }
-
-
-    public static function bind(Drive $drive,$table): Query
-    {
-        $instance = new self($table);
-        $instance::setDrive($drive);
+        $instance = new self();
+        $instance->setTable($table);
         return $instance;
     }
 
+
     /**
-     * @param Drive $drive
+     * @return $this
      */
-    public static function setDrive(Drive $drive): void
+    public function select(): Query
     {
-        self::$drive = $drive;
+        $field = self::$table_struct->formatFields($this->field);
+        $sql = sprintf('SELECT %s FROM %s', $field, self::$table);
+
+        !empty($this->where) && $sql.= " WHERE $this->where";
+        $sql.= self::_limit();
+        echo $sql;
+        $this->result = self::$drive->baseQuery($sql);
+        return $this;
     }
 
-    protected static function formatWhere(): string
-    {
-        if(is_string(self::$modem_where))
-            return self::$modem_where;
 
-        if(is_array(self::$modem_where)){
-            return rtrim(str_replace('[$WHERE]',self::_deep_formatWhere((array)self::$modem_where),self::$sql_3));
-        }
-        return '';
-    }
-    protected static function _deep_formatWhere(array $option ,bool $pack_flag = false): string
+    public function find()
     {
-        $values = array_values($option);
-        $keys   = array_keys($option);
-        $_where = '';
-        for($i=0;$i<count($option);$i++)
+        $field = self::$table_struct->formatFields($this->field);
+        $sql = sprintf('SELECT %s FROM %s', $field, $this->getFullTableName());
+        !empty($this->where) && $sql.= " WHERE $this->where";
+        $sql.= " LIMIT 0,1";
+        $out = self::$drive->baseQuery($sql);
+        return reset($out);
+    }
+
+    public function toArray(): array
+    {
+        return $this->result;
+    }
+
+
+    public function limit($idx = 0,$len = 10): Query
+    {
+        $this->limit = [$idx,$len];
+        return $this;
+    }
+
+
+
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
+    public function tableStruct(): Table
+    {
+        Table::setDrive(self::$drive);
+        return self::$table_struct = new Table(self::$table,$this->prefix);
+    }
+
+    /**
+     * @param array|string $field 要显示的字段
+     * @return $this
+     * @throws \EasyDb\Exception\DbException
+     */
+    public function field($field): Query
+    {
+        switch (gettype($field))
         {
-            if(is_string($values[$i]) || is_numeric($values[$i])){
-                $field = self::$query_flag == 1?self::_formatField($keys[$i]):$keys[$i];
-                $_where.= is_numeric($values[$i]) ?"$field=$values[$i] ":"$field=\"$values[$i]\" ";
-            }else{
-                $flag = false;
-                if(is_array($values[$i]) && count($values[$i])==1 && isset($values[$i][0])&& is_array($values[$i][0])){
-                    $flag = true;
+            case 'string':
+                $this->field = explode(',',$field);
+                break;
+            case 'array':
+                $this->field = $field;
+                break;
+            default:
+        }
+
+        try {
+            if(self::$table_struct && !empty($fields = self::$table_struct->fieldsHas($this->field))){
+                ///如果开启DEBUG 直接报错
+                if(self::$debug) {
+                    throw new DbException('字段不存在["' . implode('","', $fields) . '"]', -1);
                 }
-                $_where.= self::_deep_formatWhere($values[$i],$flag);
+                ///如果没有 过滤
+                foreach ($fields as $key => $item)
+                {
+                    if(in_array($item,$fields))unset($this->field[$key]);
+                }
+            }else{
+                if(self::$debug){
+                    throw new DbException('无法解析数据表结构');
+                }
             }
-            isset($values[$i+1]) &&($_where.= is_array($values[$i+1])?'OR ':'AND ');
-        }
+        }catch (\Exception $exception){
 
-        return $pack_flag?"($_where) ":$_where;
+        }
+        return $this;
     }
 
 
-    protected static function _formatField(string $field_name)
+    public function buildSql(): Query
     {
-
-        foreach (self::$table_structure as $v)
-        {
-            if(isset($v[$field_name]))return $v[$field_name];
-        }
-        return $field_name;
-
+        return $this;
     }
+
+
 
 
     /**
+     * 条件查询
+     * 数组：
+     * ['field'=>'value'] 默认为 等于(=)
+     * ['field',$logic,'value'] 当需要使用其他条件时 采用三元素[字段名，判断逻辑，值]
+     * 字符串:
+     * "filed1 = 1 or filed2 in(1,2,3)" 这种方式将直接作为条件拼装
+     * 条件间关联:
+     * 一层数组包裹 视作 and
+     * 两层数组包裹 视作 or
      *
+     * @param array|string $conditions 查询条件
      */
-    protected static function formatField()
+    public function where($conditions = []): Query
     {
-        ///TODO 这里添加字段验证
-        if(empty(self::$modem_field))return 'SELECT * ';
+        if (is_string($conditions)) {//处理字符串查询条件
+            $this->where = self::formatConditionsString($conditions);
+        } else if(is_array($conditions)){
+            ///处理数组查询条件
+            !empty($where = self::formatConditionsArray($conditions)) && $this->where = $where;
+        }
 
-        return str_replace('[$FIELD]',self::$modem_field,self::$sql_1);
+        return $this;
     }
+
+
+
 
 
     /**
-     * @return array|string|string[]
+     * @return string
      */
-    protected static function formatGroup()
+    public function getTable(): string
     {
-        $out_field = implode(',',self::$modem_group);
-        if(empty($out_field))return '';
-        return str_replace('[$GROUP_BY]',$out_field,self::$sql_5);
-
-    }
-
-    protected static function formatLimit()
-    {
-        if( !isset(self::$modem_limit[0])||
-            !isset(self::$modem_limit[1])||
-            !is_numeric(self::$modem_limit[0])||
-            !is_numeric(self::$modem_limit[1]) )
-        {
-            return '';
-        }else{
-            return str_replace(['[$idx]','[$len]'],self::$modem_limit,self::$sql_7);
-        }
-    }
-
-    protected static function formatOrder()
-    {
-        $out_field = '';
-        foreach (self::$modem_order as $key=>$val)
-        {
-            $out_field.= "`$key` $val";
-        }
-        if(empty($out_field)){
-            return '';
-        }
-        return str_replace('[$ORDER_BY]',$out_field,self::$sql_6);
-    }
-
-
-    private static function formatJoin(): string
-    {
-        $join = '';
-        for ($i=0;$i<count(self::$modem_join);$i++)
-        {
-            $join.= str_replace(['[$JOIN_TYPE]','[$JOIN_TABLE]','[$JOIN_ON]'],self::$modem_join[$i],self::$sql_4);
-            $join.=' ';
-        }
-        return $join;
-    }
-
-
-    /**
-     * 清理参数
-     */
-    protected static function clearParam()
-    {
-        self::$modem_where    = '';
-        self::$modem_field    = '*';
-        self::$modem_join     = [];
-        self::$join_field     = [];
-        self::$modem_limit    = [];
-        self::$modem_group    = [];
-        self::$modem_order    = [];
+        return self::$table;
     }
 
     /**
      * @param string $table
+     * @throws \EasyDb\Exception\DbException
      */
     public function setTable(string $table): void
     {
         self::$table = $table;
+        $this->tableStruct();
+        return;
+    }
+
+    /**
+     * @return \EasyDb\Drive\Drive|null
+     */
+    public static function getDrive(): ?Drive
+    {
+        return self::$drive;
+    }
+
+    /**
+     * @param \EasyDb\Drive\Drive|null $drive
+     */
+    public static function setDrive(?Drive $drive): void
+    {
+        self::$drive = $drive;
     }
 
 
+    /**
+     * 格式化查询条件字符串
+     * @param $condition
+     * @return mixed
+     */
+    protected function formatConditionsString($condition)
+    {
+        return $condition;
+    }
+
+    /**
+     * 格式化查询条件数组
+     * @param $condition
+     * @param string $logic
+     * @return string
+     */
+    protected function formatConditionsArray($condition,$logic = 'AND'): string
+    {
+        $template = '';
+
+        foreach ($condition as $key => $item) {
+            if(is_array($item) && array_sum(array_keys($item))>=3){
+                $template.= $logic." $item[0] $item[1] ";
+                if(is_numeric($item[2])){
+                    $template.= $item[2];
+                }else if(is_string($item[2])){
+
+                    $template.= "\"$item[2]\"";
+                }else{
+                    $val_str = '';
+                    foreach ($item[2] as $value){
+                        if(is_numeric($value))$val_str.=$value.',';
+                        if(is_string($value))$val_str.="\"$value\",";
+                    }
+                    $val_str = rtrim($val_str,',');
+                    $template.= '('.$val_str.')';
+                }
+                switch ($item[1]){
+                    case 'in':
+                        return ltrim($template,'OR AND');
+                    case 'like':
+                    default:
+
+                }
+            }else if(is_array($item)){
+                $template.= 'OR ';
+                count($item)>1 && $template.= '(';
+                $template.= $this->formatConditionsArray($item);
+                count($item)>1 && $template.= ') ';
+            }else{
+                if(!is_numeric($item))$item = "\"$item\"";
+                $template.= $logic." $key = $item ";
+            }
+
+        }
+
+        return ltrim($template,'OR AND');
+    }
 
 
+    private function _limit(): string
+    {
+        if(empty($this->limit)){
+            return "";
+        }
+        return " LIMIT {$this->limit[0]},{$this->limit[1]}";
+    }
 
+    private function getFullTableName():string
+    {
+        $db = self::$drive->getConfig()->getDataBase();
+        $tb = self::$table;
+        return "`$db`.`$tb`";
 
-
-
-
-
-
-
-
-
-
-
+    }
 
 
 

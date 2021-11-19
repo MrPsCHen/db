@@ -3,7 +3,7 @@
 
 namespace EasyDb\Config;
 
-class MysqlConfig implements Config
+class MysqlConfig extends Config
 {
     protected string     $host       = '';
     protected int        $port       = 3306;
