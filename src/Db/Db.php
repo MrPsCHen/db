@@ -51,6 +51,9 @@ class Db
     }
 
 
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
     public static function table($table):Query
     {
         return Query::bind(self::$drive,$table);

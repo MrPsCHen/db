@@ -15,6 +15,14 @@ class Builder extends Query
     private static string $sql_insert_3 = 'VALUES ([$VALUES])';
     private static array  $set_array    = [];
 
+
+    public function __construct($table)
+    {
+        self::$table = $table;
+
+    }
+
+
     /**
      * @throws \EasyDb\Exception\DbException
      */

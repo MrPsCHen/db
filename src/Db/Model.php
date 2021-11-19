@@ -13,7 +13,7 @@ class Model extends Builder
     {
         parent::$drive = Db::getDrive();
         parent::__construct(basename(str_replace('\\', '/', get_class($this))));
-        parent::getTableStructure(self::$table);
+        parent::bind(parent::$drive,self::$table);
     }
 
 }
