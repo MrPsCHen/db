@@ -9,7 +9,7 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 
 
 $user = new user();
-var_export($user->find());
+var_export($user->limit(0,1)->timeFormat()->select()->toArray());
 
 
 

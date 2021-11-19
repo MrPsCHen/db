@@ -31,13 +31,17 @@ class Query
      */
     protected   array   $field      = [];
     /**
-     * @var string
+     * @var string 插叙你条件
      */
     protected   string  $where      = '';
-
+    /**
+     * @var array [offset,length]
+     */
     protected   array   $limit      = [];
     protected   array   $group      = [];
     protected   array   $order      = [];
+
+
 
     /**
      * 查询条件
@@ -61,6 +65,7 @@ class Query
 
 
     /**
+     * 1637293294
      * @return $this
      */
     public function select(): Query
@@ -68,13 +73,12 @@ class Query
         $field = self::$table_struct->formatFields($this->field);
         $sql = sprintf('SELECT %s FROM %s', $field, self::$table);
 
+
         !empty($this->where) && $sql.= " WHERE $this->where";
         $sql.= self::_limit();
-        echo $sql;
         $this->result = self::$drive->baseQuery($sql);
         return $this;
     }
-
 
     public function find()
     {

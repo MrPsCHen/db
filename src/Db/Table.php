@@ -1,6 +1,8 @@
 <?php
 
-
+/***
+ *
+ */
 namespace EasyDb;
 
 
@@ -25,10 +27,6 @@ class Table implements TableType
     protected           array   $field_comment  = [];//字段注释
 
     /**
-     * @var \EasyDb\Config\Config|null
-     */
-
-    /**
      * @param string $table
      * @param string $prefix
      * @param array $option
@@ -38,10 +36,7 @@ class Table implements TableType
     {
         $this->prefix   = $prefix;
         $this->table    = $table;
-
-
         $this->format();
-
     }
 
     public static function set(){
