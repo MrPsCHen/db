@@ -70,12 +70,18 @@ class Query
      */
     public function select(): Query
     {
-        $field = self::$table_struct->formatFields($this->field);
-        $sql = sprintf('SELECT %s FROM %s', $field, self::$table);
+        /**
+         * 导出 格式化后的字段
+         */
+        $output_field = self::$table_struct->formatFields($this->field);
 
-
+        /**
+         * 拼装基本sql语句
+         */
+        $sql = sprintf('SELECT %s FROM %s', $output_field, $this->getFullTableName());
         !empty($this->where) && $sql.= " WHERE $this->where";
         $sql.= self::_limit();
+
         $this->result = self::$drive->baseQuery($sql);
         return $this;
     }
@@ -83,6 +89,7 @@ class Query
     public function find()
     {
         $field = self::$table_struct->formatFields($this->field);
+
         $sql = sprintf('SELECT %s FROM %s', $field, $this->getFullTableName());
         !empty($this->where) && $sql.= " WHERE $this->where";
         $sql.= " LIMIT 0,1";
@@ -114,7 +121,7 @@ class Query
     }
 
     /**
-     * @param array|string $field 要显示的字段
+     * @param array|string $field 指定字段
      * @return $this
      */
     public function field($field): Query
@@ -129,7 +136,6 @@ class Query
                 break;
             default:
         }
-
         try {
             if(self::$table_struct && !empty($fields = self::$table_struct->fieldsHas($this->field))){
                 ///如果开启DEBUG 直接报错
@@ -157,6 +163,7 @@ class Query
     {
         return $this;
     }
+
 
 
 
@@ -295,7 +302,7 @@ class Query
 
     private function getFullTableName():string
     {
-        return sprintf("`%s`.%s%s",self::$drive->getConfig()->getDataBase(),self::$prefix,self::$table);
+        return sprintf("`%s`.`%s%s`",self::$drive->getConfig()->getDataBase(),self::$prefix,self::$table);
     }
 
 

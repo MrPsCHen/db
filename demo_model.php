@@ -7,9 +7,12 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
 
-
 $user = new user();
-var_export($user->limit(0,1)->timeFormat()->select()->toArray());
+try {
+    $user->setTable('user');
+} catch (\EasyDb\Exception\DbException $e) {
+}
+var_export($user->filter(['password'])->limit(0,1)->timeFormat()->select()->toArray());
 
 
 

@@ -104,14 +104,30 @@ class Table implements TableType
         $tmp = '';
         foreach ($fields as $field)
         {
-            $tmp.= "`{$this->prefix}{$this->table}`.`$field`";
+            $tmp.= "`{$this->prefix}{$this->table}`.`$field`,";
         }
         empty($tmp) && $tmp = '*';
-        return $tmp;
+        return rtrim($tmp,',');
     }
 
 
+    /**
+     * @param array $field
+     * @return array
+     */
+    public function unionFiled($field = []):array
+    {
+        if(!empty($this->field_full)) return array_intersect($field,$this->field_full);
+        return $field;
+    }
 
+    /**
+     * @return array
+     */
+    public function getFieldFull(): array
+    {
+        return $this->field_full;
+    }
 
 
 
