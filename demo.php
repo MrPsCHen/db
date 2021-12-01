@@ -72,15 +72,11 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 
 ///
 
+/**
+ * 基础查询
+ */
 $user = \EasyDb\Db::table('user');
-
-var_export($user->where(['username'=>'admin'])->buildSql()->find());
-
-
-
-
-
-
+var_export($user->where([['username'=>'admin']])->select()->toArray());
 
 
 

@@ -12,10 +12,24 @@ class Query
 {
 
 
+    /**
+     * @var bool 报错捕获输出
+     */
     public      static  bool    $debug          = true;
 
+    /**
+     * @var bool 是否输出sql语句
+     */
+    public              bool    $is_out_sql     = false;
+    public              string  $sql_string     = '';
+    /**
+     * @var \EasyDb\Drive\Drive|null 驱动对象 由全局加载
+     */
     protected   static  ?Drive  $drive          = null;
 
+    /**
+     * @var \EasyDb\Table|null 数据表结构
+     */
     protected   static  ?Table  $table_struct   = null;
 
     /**
@@ -38,7 +52,13 @@ class Query
      * @var array [offset,length]
      */
     protected   array   $limit      = [];
+    /**
+     * @var array
+     */
     protected   array   $group      = [];
+    /**
+     * @var array
+     */
     protected   array   $order      = [];
 
 
@@ -51,6 +71,8 @@ class Query
 
     protected   array   $result     = [];
 
+    /*--------------------------------------------------------------------------------------------------------------- */
+    //初始化方法
     /**
      * @throws \EasyDb\Exception\DbException
      */
@@ -65,34 +87,36 @@ class Query
 
 
     /**
-     * 1637293294
+     * 查询方法
      * @return $this
      */
     public function select(): Query
     {
-        /**
-         * 导出 格式化后的字段
-         */
+        /** 导出格式化后的字段 */
         $output_field = self::$table_struct->formatFields($this->field);
-
-        /**
-         * 拼装基本sql语句
-         */
+        /** 拼装基本sql语句 */
         $sql = sprintf('SELECT %s FROM %s', $output_field, $this->getFullTableName());
+        /** 拼接查询条件 */
         !empty($this->where) && $sql.= " WHERE $this->where";
+        /** 拼接限制子句 */
         $sql.= self::_limit();
-
-        $this->result = self::$drive->baseQuery($sql);
+        /** 输出模式,如果为is_out_sql true 不执行查询*/
+        $this->sql_string = $sql;
+        !$this->is_out_sql && ($this->result = self::$drive->baseQuery($sql));
         return $this;
     }
 
     public function find()
     {
-        $field = self::$table_struct->formatFields($this->field);
-
-        $sql = sprintf('SELECT %s FROM %s', $field, $this->getFullTableName());
+        /** 导出格式化后的字段 */
+        $output_field = self::$table_struct->formatFields($this->field);
+        /** 拼装基本sql语句 */
+        $sql = sprintf('SELECT %s FROM %s', $output_field, $this->getFullTableName());
+        /** 拼接查询条件 */
         !empty($this->where) && $sql.= " WHERE $this->where";
+        /** 限制一条数据 */
         $sql.= " LIMIT 0,1";
+        $this->sql_string = $sql;
         $out = self::$drive->baseQuery($sql);
         return reset($out);
     }
@@ -102,13 +126,16 @@ class Query
         return $this->result;
     }
 
-
+    /**
+     * @param int $idx 索引
+     * @param int $len 长度
+     * @return $this
+     */
     public function limit($idx = 0,$len = 10): Query
     {
         $this->limit = [$idx,$len];
         return $this;
     }
-
 
 
     /**
@@ -161,10 +188,17 @@ class Query
 
     public function buildSql(): Query
     {
+        $this->is_out_sql = true;
         return $this;
     }
 
-
+    /**
+     * @return string 导出查询语句
+     */
+    public function toSqlString(): string
+    {
+        return $this->sql_string;
+    }
 
 
 
@@ -178,7 +212,6 @@ class Query
      * 条件间关联:
      * 一层数组包裹 视作 and
      * 两层数组包裹 视作 or
-     *
      * @param array|string $conditions 查询条件
      */
     public function where($conditions = []): Query
@@ -243,52 +276,41 @@ class Query
     }
 
     /**
+     * 递归 生成条件字符串
      * 格式化查询条件数组
-     * @param $condition
-     * @param string $logic
+     * @param array $condition 查询条件
+     * @param string $logic 连接逻辑 AND OR
      * @return string
      */
-    protected function formatConditionsArray($condition,$logic = 'AND'): string
+    protected function formatConditionsArray(array $condition, $logic = 'AND'): string
     {
-        $template = '';
+        $temp = '';
 
         foreach ($condition as $key => $item) {
-            if(is_array($item) && array_sum(array_keys($item))>=3){
-                $template.= $logic." $item[0] $item[1] ";
-                if(is_numeric($item[2])){
-                    $template.= $item[2];
-                }else if(is_string($item[2])){
-
-                    $template.= "\"$item[2]\"";
-                }else{
-                    $val_str = '';
-                    foreach ($item[2] as $value){
-                        if(is_numeric($value))$val_str.=$value.',';
-                        if(is_string($value))$val_str.="\"$value\",";
+            if(is_string($item)|| is_numeric($item)){
+                ///字符串或数值处理
+                $temp.= " $logic $key = ".(is_numeric($item)?$item:"\"$item\" ");
+            }else if(is_array($item) && array_sum(array_keys($item))>=3){
+                /// 判断带逻辑处理的字段处理
+                /// [filed,logic,value]
+                /// eg: ['user','<>',0]
+                if(is_array($item[2])) {
+                    $tmp_item = '';
+                    foreach ($item[2] as $value) {
+                        if(is_numeric($value))$tmp_item = "$value,";
+                        if(is_string($value))$tmp_item = "\"$value\",";
                     }
-                    $val_str = rtrim($val_str,',');
-                    $template.= '('.$val_str.')';
+                    $item[2] = sprintf("(%s ) ",rtrim($tmp_item,','));
                 }
-                switch ($item[1]){
-                    case 'in':
-                        return ltrim($template,'OR AND');
-                    case 'like':
-                    default:
-
-                }
-            }else if(is_array($item)){
-                $template.= 'OR ';
-                count($item)>1 && $template.= '(';
-                $template.= $this->formatConditionsArray($item);
-                count($item)>1 && $template.= ') ';
-            }else{
-                if(!is_numeric($item))$item = "\"$item\"";
-                $template.= $logic." $key = $item ";
+                $temp.= " $logic $item[0] $item[1] $item[2] ";
+            }else {
+                $temp_deep = $this->formatConditionsArray($item);
+                count($item)>=2 && $temp_deep = "($temp_deep) ";
+                $temp= trim($temp)." OR ".$temp_deep;
             }
-
         }
-
-        return ltrim($template,'OR AND');
+        $temp = ltrim($temp,' AND ');
+        return ltrim($temp,' OR ');
     }
 
 
@@ -306,5 +328,8 @@ class Query
     }
 
 
+    private function formatConditionsType(){
+
+    }
 
 }

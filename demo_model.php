@@ -18,7 +18,6 @@ var_export($user->filter(['password'])->limit(0,1)->timeFormat()->select()->toAr
 
 
 
-
 //$user = new user();
 ////$user->join('group','group_id')->where(['id'=>1]);
 //////print_r($user->select()->toArray());
