@@ -21,7 +21,8 @@ use Throwable;
 class DbException extends Exception
 {
     const CODE = [
-        102=>'数据库未初始化'
+        102=>'数据库未初始化',
+        103=>'未设置配置数据'
     ];
 
 

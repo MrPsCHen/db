@@ -100,6 +100,12 @@ class Model extends Builder
         return parent::select();
     }
 
+    public function find()
+    {
+        $this->_output_filed();
+        return parent::find();
+    }
+
     /**
      * 导出字段
      */

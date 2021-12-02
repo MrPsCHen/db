@@ -226,10 +226,6 @@ class Query
         return $this;
     }
 
-
-
-
-
     /**
      * @return string
      */
@@ -264,7 +260,6 @@ class Query
         self::$drive = $drive;
     }
 
-
     /**
      * 格式化查询条件字符串
      * @param $condition
@@ -285,10 +280,9 @@ class Query
     protected function formatConditionsArray(array $condition, $logic = 'AND'): string
     {
         $temp = '';
-
         foreach ($condition as $key => $item) {
             if(is_string($item)|| is_numeric($item)){
-                ///字符串或数值处理
+                /// 字符串或数值处理
                 $temp.= " $logic $key = ".(is_numeric($item)?$item:"\"$item\" ");
             }else if(is_array($item) && array_sum(array_keys($item))>=3){
                 /// 判断带逻辑处理的字段处理
@@ -313,7 +307,6 @@ class Query
         return ltrim($temp,' OR ');
     }
 
-
     private function _limit(): string
     {
         if(empty($this->limit)){
@@ -321,6 +314,7 @@ class Query
         }
         return " LIMIT {$this->limit[0]},{$this->limit[1]}";
     }
+
 
     private function getFullTableName():string
     {

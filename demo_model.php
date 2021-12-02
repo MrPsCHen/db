@@ -12,7 +12,7 @@ try {
     $user->setTable('user');
 } catch (\EasyDb\Exception\DbException $e) {
 }
-var_export($user->filter(['password'])->limit(0,1)->timeFormat()->select()->toArray());
+var_export($user->filter(['password'])->timeFormat()->find());
 
 
 

@@ -22,7 +22,7 @@ class MysqlPdoDrive implements Drive
     public function connect(): ?PDO
     {
         if(!$this->Config){
-            throw new DbException();
+            throw new DbException('not found configure file');
         }
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
@@ -31,8 +31,7 @@ class MysqlPdoDrive implements Drive
             $pdo->exec("set names ".self::$charset);
             return $pdo;
         }catch (PDOException $e) {
-//            var_dump($e);
-            echo "";
+
         }
 
         return null;

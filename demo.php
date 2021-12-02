@@ -14,6 +14,7 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 
 
 
+
 ////
 ////try {
 ////    $db->testConnect();
@@ -26,7 +27,6 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 ////$back->join('group','`group`.`id` = `user`.`group_id`');
 ////$result = $back->select()->toArray();
 ////var_export($back->count());
-//
 ////
 ////$where1 =
 ////[
@@ -77,6 +77,23 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
  */
 $user = \EasyDb\Db::table('user');
 var_export($user->where([['username'=>'admin']])->select()->toArray());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
