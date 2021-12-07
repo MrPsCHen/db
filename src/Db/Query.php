@@ -220,6 +220,8 @@ class Query
             $this->where = self::formatConditionsString($conditions);
         } else if(is_array($conditions)){
             ///处理数组查询条件
+            if(array_keys($conditions) == range(0,2))$conditions = [$conditions];
+            if(array_keys($conditions))
             !empty($where = self::formatConditionsArray($conditions)) && $this->where = $where;
         }
 
@@ -284,7 +286,7 @@ class Query
             if(is_string($item)|| is_numeric($item)){
                 /// 字符串或数值处理
                 $temp.= " $logic $key = ".(is_numeric($item)?$item:"\"$item\" ");
-            }else if(is_array($item) && array_sum(array_keys($item))>=3){
+            }else if(is_array($item) && array_sum(array_keys($item))>=3 && $this->_trinomialCheck($item)){
                 /// 判断带逻辑处理的字段处理
                 /// [filed,logic,value]
                 /// eg: ['user','<>',0]
@@ -305,6 +307,14 @@ class Query
         }
         $temp = ltrim($temp,' AND ');
         return ltrim($temp,' OR ');
+    }
+
+    private function _trinomialCheck(array $item):bool{
+        if(array_sum(array_keys($item))<3)return false;
+        for($i = 0;$i<=2;$i++){
+            if(!is_numeric($item[$i]) && !is_string($item[$i]))return false;
+        }
+        return true;
     }
 
     private function _limit(): string

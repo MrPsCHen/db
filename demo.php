@@ -76,9 +76,22 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
  * 基础查询
  */
 $user = \EasyDb\Db::table('user');
-var_export($user->where([['username'=>'admin']])->select()->toArray());
+//var_export($user->where([['username'=>'admin']])->select()->toArray());
 
 
+/**
+ * 修改
+ */
+$userBuilder = new \EasyDb\Builder('user');
+//var_export($userBuilder->where(['id','>=','8'])->update(['nickname'=>"nickname",'avatar'=>'http://']));
+/**
+ * 新增
+ */
+//$userBuilder->insert(['nickname'=>11,'username'=>'xxxx']);
+
+/**
+ * 删除
+ */
 
 
 

@@ -78,15 +78,19 @@ class MysqlPdoDrive implements Drive
      */
     public function executeQuery(string $sql, array $array): bool
     {
-        self::connect();
-        self::$affected_rows    = 0;
-        self::$error_msg        = '';
-        self::$error_code       = 0;
-        $instance               = $this->pdo->prepare($sql);
-        $back                   = $instance->execute();
-        self::$affected_rows    = $instance->rowCount();
-        self::$error_code       = $instance->errorCode();
-        self::$error_msg        = json_encode($instance->errorInfo());
+        self::connect();                                                //连接数据库
+        self::$affected_rows    = 0;                                    //
+        self::$error_msg        = '';                                   //
+        self::$error_code       = 0;                                    //
+        $instance               = $this->pdo->prepare($sql);            //
+        echo "\n";
+        foreach ($array as $key =>$val){
+            $instance->bindParam(":$key",$array[$key]);
+        }
+        $back                   = $instance->execute();                 //
+        self::$affected_rows    = $instance->rowCount();                //
+        self::$error_code       = $instance->errorCode();               //
+        self::$error_msg        = json_encode($instance->errorInfo());  //
         return $back;
     }
     public function getConfig():config
