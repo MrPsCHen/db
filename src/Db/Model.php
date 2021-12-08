@@ -106,13 +106,6 @@ class Model extends Builder
         return parent::find();
     }
 
-    /**
-     *
-     */
-    public function count()
-    {
-        
-    }
 
     /**
      * 导出字段
