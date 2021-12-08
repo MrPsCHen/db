@@ -135,6 +135,7 @@ class Query
     {
         $sql = "SELECT count(*) AS `COUNT_FIELD` FROM {$this->getTable()}";
         !empty($this->where) && $sql.= " WHERE $this->where";
+        if($this->is_out_sql)return $sql;
         $out = self::$drive->baseQuery($sql);
         !empty($out) && $out = reset($out);
         return $out['COUNT_FIELD'] ?? 0;
@@ -259,9 +260,9 @@ class Query
             $this->where = self::formatConditionsString($conditions);
         } else if(is_array($conditions)){
             ///处理数组查询条件
-            if(array_keys($conditions) == range(0,2))$conditions = [$conditions];
+            if(array_keys($conditions) === range(0,2))$conditions = [$conditions];
             if(array_keys($conditions))
-            !empty($where = self::formatConditionsArray($conditions)) && $this->where = $where;
+            !empty($where = self::formatConditionsArray([$conditions])) && $this->where = $where;
         }
 
         return $this;
@@ -320,20 +321,21 @@ class Query
      */
     protected function formatConditionsArray(array $condition, $logic = 'AND'): string
     {
+
         $temp = '';
         foreach ($condition as $key => $item) {
             if(is_string($item)|| is_numeric($item)){
                 /// 字符串或数值处理
                 $temp.= " $logic $key = ".(is_numeric($item)?$item:"\"$item\" ");
-            }else if(is_array($item) && array_sum(array_keys($item))>=3 && $this->_trinomialCheck($item)){
+            }else if(is_array($item) && $this->_trinomialCheck($item)){
                 /// 判断带逻辑处理的字段处理
                 /// [filed,logic,value]
                 /// eg: ['user','<>',0]
                 if(is_array($item[2])) {
                     $tmp_item = '';
                     foreach ($item[2] as $value) {
-                        if(is_numeric($value))$tmp_item = "$value,";
-                        if(is_string($value))$tmp_item = "\"$value\",";
+                        if(is_numeric($value))$tmp_item.= "$value,";
+                        if(is_string($value))$tmp_item.= "\"$value\",";
                     }
                     $item[2] = sprintf("(%s ) ",rtrim($tmp_item,','));
                 }
@@ -348,9 +350,13 @@ class Query
         return ltrim($temp,' OR ');
     }
 
-    private function _trinomialCheck(array $item):bool{
-        if(array_sum(array_keys($item))<3)return false;
-        for($i = 0;$i<=2;$i++){
+    private function _trinomialCheck($item):bool{
+        if(!is_array($item)) {
+            return false;
+        }else if(array_sum(array_keys($item))<3) {
+            return false;
+        }
+        for($i = 0;$i<=1;$i++){
             if(!is_numeric($item[$i]) && !is_string($item[$i]))return false;
         }
         return true;

@@ -78,7 +78,7 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 $user = \EasyDb\Db::table('user');
 //var_export($user->where([['username'=>'admin']])->select()->toArray());
 
-var_export($user->count());
+var_export($user->where(['id','in',[1,2]])->count());
 
 /**
  * 修改
@@ -93,12 +93,6 @@ var_export($user->count());
 /**
  * 删除
  */
-
-
-
-
-
-
 
 
 
