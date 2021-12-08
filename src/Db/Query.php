@@ -10,8 +10,11 @@ use Exception;
 
 class Query
 {
-
-
+    const JOIN_TYPE_INNER   = ' INNER JOIN ';
+    const JOIN_TYPE_LEFT    = ' LEFT JOIN ';
+    const JOIN_TYPE_RIGHT   = ' RIGHT JOIN ';
+    const JOIN_TYPE_DEFAULT = ' INNER JOIN ';
+    /*--------------------------------------------------------------------------------------------------------------- */
     /**
      * @var bool 报错捕获输出
      */
@@ -70,6 +73,9 @@ class Query
     protected   array   $conditions = [];
 
     protected   array   $result     = [];
+    /*--------------------------------------------------------------------------------------------------------------- */
+    //join  关联表
+    protected  array   $join_object = [];
 
     /*--------------------------------------------------------------------------------------------------------------- */
     //初始化方法
@@ -120,6 +126,39 @@ class Query
         $out = self::$drive->baseQuery($sql);
         return reset($out);
     }
+
+    /**
+     *
+     * @return int
+     */
+    public function count():int
+    {
+        $sql = "SELECT count(*) AS `COUNT_FIELD` FROM {$this->getTable()}";
+        !empty($this->where) && $sql.= " WHERE $this->where";
+        $out = self::$drive->baseQuery($sql);
+        !empty($out) && $out = reset($out);
+        return $out['COUNT_FIELD'] ?? 0;
+    }
+
+//    /**
+//     * 连表查询
+//     * @param \EasyDb\Table | \EasyDb\Query | string $table 关联表
+//     * @param array | string $field_mapping 映射字段,
+//     * @throws \EasyDb\Exception\DbException
+//     */
+//    public function join($table,$field_mapping = [],$join_type = self::JOIN_TYPE_DEFAULT): Query
+//    {
+//        if ($table instanceof Table) {
+//
+//        } else if ($table instanceof Query) {
+//
+//        } else if (is_string($table)) {
+//
+//        } else {
+//            if (self::$debug) throw new DbException('the input is not accepted');
+//        }
+//        return $this;
+//    }
 
     public function toArray(): array
     {
@@ -332,8 +371,8 @@ class Query
     }
 
 
-    private function formatConditionsType(){
-
-    }
+//    private function formatConditionsType(){
+//
+//    }
 
 }

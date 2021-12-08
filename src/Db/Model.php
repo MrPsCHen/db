@@ -107,6 +107,14 @@ class Model extends Builder
     }
 
     /**
+     *
+     */
+    public function count()
+    {
+        
+    }
+
+    /**
      * 导出字段
      */
     private function _output_filed(): void

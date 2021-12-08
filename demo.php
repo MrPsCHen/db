@@ -78,11 +78,12 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 $user = \EasyDb\Db::table('user');
 //var_export($user->where([['username'=>'admin']])->select()->toArray());
 
+var_export($user->count());
 
 /**
  * 修改
  */
-$userBuilder = new \EasyDb\Builder('user');
+//$userBuilder = new \EasyDb\Builder('user');
 //var_export($userBuilder->where(['id','>=','8'])->update(['nickname'=>"nickname",'avatar'=>'http://']));
 /**
  * 新增
