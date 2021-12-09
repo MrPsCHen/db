@@ -103,7 +103,12 @@ class Model extends Builder
     public function find()
     {
         $this->_output_filed();
-        return parent::find();
+        if($out = parent::find()){
+            foreach ($this->format_time as $item){
+                if(isset($out[$item]))$out[$item] = $this->_date($out[$item]);
+            }
+        }
+        return $out;
     }
 
 
