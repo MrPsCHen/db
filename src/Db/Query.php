@@ -10,8 +10,11 @@ use Exception;
 
 class Query
 {
-
-
+    const JOIN_TYPE_INNER   = ' INNER JOIN ';
+    const JOIN_TYPE_LEFT    = ' LEFT JOIN ';
+    const JOIN_TYPE_RIGHT   = ' RIGHT JOIN ';
+    const JOIN_TYPE_DEFAULT = ' INNER JOIN ';
+    /*--------------------------------------------------------------------------------------------------------------- */
     /**
      * @var bool 报错捕获输出
      */
@@ -70,6 +73,9 @@ class Query
     protected   array   $conditions = [];
 
     protected   array   $result     = [];
+    /*--------------------------------------------------------------------------------------------------------------- */
+    //join  关联表
+    protected  array   $join_object = [];
 
     /*--------------------------------------------------------------------------------------------------------------- */
     //初始化方法
@@ -120,6 +126,40 @@ class Query
         $out = self::$drive->baseQuery($sql);
         return reset($out);
     }
+
+    /**
+     *
+     * @return int
+     */
+    public function count():int
+    {
+        $sql = "SELECT count(*) AS `COUNT_FIELD` FROM {$this->getTable()}";
+        !empty($this->where) && $sql.= " WHERE $this->where";
+        if($this->is_out_sql)return $sql;
+        $out = self::$drive->baseQuery($sql);
+        !empty($out) && $out = reset($out);
+        return $out['COUNT_FIELD'] ?? 0;
+    }
+
+//    /**
+//     * 连表查询
+//     * @param \EasyDb\Table | \EasyDb\Query | string $table 关联表
+//     * @param array | string $field_mapping 映射字段,
+//     * @throws \EasyDb\Exception\DbException
+//     */
+//    public function join($table,$field_mapping = [],$join_type = self::JOIN_TYPE_DEFAULT): Query
+//    {
+//        if ($table instanceof Table) {
+//
+//        } else if ($table instanceof Query) {
+//
+//        } else if (is_string($table)) {
+//
+//        } else {
+//            if (self::$debug) throw new DbException('the input is not accepted');
+//        }
+//        return $this;
+//    }
 
     public function toArray(): array
     {
@@ -220,7 +260,9 @@ class Query
             $this->where = self::formatConditionsString($conditions);
         } else if(is_array($conditions)){
             ///处理数组查询条件
-            !empty($where = self::formatConditionsArray($conditions)) && $this->where = $where;
+            if(array_keys($conditions) === range(0,2))$conditions = [$conditions];
+            if(array_keys($conditions))
+            !empty($where = self::formatConditionsArray([$conditions])) && $this->where = $where;
         }
 
         return $this;
@@ -279,20 +321,21 @@ class Query
      */
     protected function formatConditionsArray(array $condition, $logic = 'AND'): string
     {
+
         $temp = '';
         foreach ($condition as $key => $item) {
             if(is_string($item)|| is_numeric($item)){
                 /// 字符串或数值处理
                 $temp.= " $logic $key = ".(is_numeric($item)?$item:"\"$item\" ");
-            }else if(is_array($item) && array_sum(array_keys($item))>=3){
+            }else if(is_array($item) && $this->_trinomialCheck($item)){
                 /// 判断带逻辑处理的字段处理
                 /// [filed,logic,value]
                 /// eg: ['user','<>',0]
                 if(is_array($item[2])) {
                     $tmp_item = '';
                     foreach ($item[2] as $value) {
-                        if(is_numeric($value))$tmp_item = "$value,";
-                        if(is_string($value))$tmp_item = "\"$value\",";
+                        if(is_numeric($value))$tmp_item.= "$value,";
+                        if(is_string($value))$tmp_item.= "\"$value\",";
                     }
                     $item[2] = sprintf("(%s ) ",rtrim($tmp_item,','));
                 }
@@ -305,6 +348,18 @@ class Query
         }
         $temp = ltrim($temp,' AND ');
         return ltrim($temp,' OR ');
+    }
+
+    private function _trinomialCheck($item):bool{
+        if(!is_array($item)) {
+            return false;
+        }else if(array_sum(array_keys($item))<3) {
+            return false;
+        }
+        for($i = 0;$i<=1;$i++){
+            if(!is_numeric($item[$i]) && !is_string($item[$i]))return false;
+        }
+        return true;
     }
 
     private function _limit(): string
@@ -322,8 +377,8 @@ class Query
     }
 
 
-    private function formatConditionsType(){
-
-    }
+//    private function formatConditionsType(){
+//
+//    }
 
 }

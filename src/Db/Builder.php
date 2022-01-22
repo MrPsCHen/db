@@ -8,16 +8,14 @@ use EasyDb\Exception\DbException;
 
 class Builder extends Query
 {
-    private static string $sql_update_1 = 'UPDATE [$TABLE] ';
-    private static string $sql_update_2 = 'SET ';
-    private static string $sql_insert_1 = 'INSERT INTO [$TABLE] ';
-    private static string $sql_insert_2 = ' ';
-    private static string $sql_insert_3 = 'VALUES ([$VALUES])';
-    private static array  $set_array    = [];
+    public $affected_rows = 0;
 
-
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
     public function __construct($table)
     {
+        self::$drive = Db::getDrive();
         self::$table = $table;
 
     }
@@ -26,65 +24,29 @@ class Builder extends Query
     /**
      * @throws \EasyDb\Exception\DbException
      */
-    public function update(array $array = []): string
+    public function update(array $array): bool
     {
-        self::$query_flag = 2;
-        $sql = str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_update_1);
-        $sql.= self::formatSet($array);
-        $sql.= self::formatWhere();
-        self::$sql_update_2 = 'SET ';
-
-        return self::$drive->executeQuery($sql,$array);
-
+        return $this->_update($array);
     }
 
     /**
      * @param array $array
      * @return int
+     * @throws \EasyDb\Exception\DbException
      */
     public function insert(array $array): int
     {
-        if(empty($array))return -1;
-        if(is_numeric(array_keys($array)[0])){
-            var_dump(self::$table_field);
-        }else{
-            $sql_insert_2 = '';
-            foreach ($array as $item)
-            {
-                if(is_numeric($sql_insert_2))$sql_insert_2.=$item;
-                else $sql_insert_2.="\"$item\"";
-                $sql_insert_2.=',';
-            }
-            self::$sql_insert_2 = '('.rtrim($sql_insert_2,',').')';
-        }
-        $sql = str_replace('[$TABLE]','`'.trim(self::$table,'`').'`',self::$sql_insert_1);
-        $sql.= '('.'`'.implode('`,`',array_keys($array)).'`)';
-        $sql.= ' VALUE'.self::$sql_insert_2;
-        if(self::$drive->executeQuery($sql,[])){
-            return (self::$drive)::getAffectedRows();
-        }else{
-            return -2;
-        }
+        return self::_insert($array);
     }
 
     /**
      * @throws \EasyDb\Exception\DbException
      */
-    private function formatSet(array $array):string
+    public function delete(): bool
     {
-        if (empty($array))throw new DbException('无更新字段');
-        foreach ($array as $key => $value)
-        {
-            if(!is_numeric($value))$value = "\"$value\"";
-            self::$sql_update_2.= $key.' = '.$value.' ,';
-        }
-        self::$sql_update_2 = rtrim(self::$sql_update_2,',');
-        return self::$sql_update_2;
+        return $this->_delete();
     }
-    private function formatValue()
-    {
 
-    }
 
 
     public function getErrorCode(): int
@@ -98,5 +60,75 @@ class Builder extends Query
     }
 
 
+    /**
+     * 执行插入逻辑
+     * @throws \EasyDb\Exception\DbException
+     */
+    private function _insert(array $data):bool
+    {
+        if (empty($data)) {
+            if (self::$debug) throw new DbException('not found data');
+            else return false;
+        }
+        $database = (self::$drive->getConfig()->out())['database'];
+        $insert_sql = sprintf('INSERT INTO `%s`.`%s`', $database, $this->getTable());
+        $insert_filed = '';
+        $insert_value = '';
+        foreach ($data as $key => $value) {
+            $insert_filed .= ",`$key`";
+            $insert_value .= ",:$key";
+        }
+        $insert_filed = ltrim($insert_filed, ',');
+        $insert_value = ltrim($insert_value, ',');
+        $sql = sprintf($insert_sql . "(%s)" . " VALUES(%s)",$insert_filed,$insert_value);
+        $execute = self::$drive->executeQuery($sql,$data);
+        $this->affected_rows = self::$drive::getAffectedRows();
+        if(self::$drive::getErrorCode() !== 0){
+            if(self::$debug) throw new DbException(self::$drive::getErrorMessage());
+            exit;
+        }
+        return  $execute;
+    }
 
+
+
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
+    private function _delete(): bool
+    {
+        if(empty($this->where) && self::$debug) {
+            throw new DbException('condition not null');
+        }
+        $database = (self::$drive->getConfig()->out())['database'];
+        $sql = sprintf("DELETE FROM `%s`.`%s` WHERE %s",$database,$this->getTable(),$this->where);
+        $execute = self::$drive->executeQuery($sql,[]);
+        $this->affected_rows = self::$drive::getAffectedRows();
+        return  $execute;
+    }
+
+
+    /**
+     * @throws \EasyDb\Exception\DbException
+     */
+    private function _update(array $data): bool
+    {
+        if(empty($this->where) && self::$debug) {
+            throw new DbException('condition not null');
+        }
+        $database = (self::$drive->getConfig()->out())['database'];
+        $update_value = '';
+        foreach ($data as $key=>$value){
+            $update_value.= ",`{$this->getTable()}`.`$key` = ";
+            if(is_numeric($value) || is_string($value)){
+                $update_value.=':'.$key;
+            }
+        }
+        $update_value = ltrim($update_value,',');
+        $sql = sprintf("UPDATE `%s`.`%s` SET %s WHERE %s",$database,$this->getTable(),$update_value,$this->where);
+        self::$drive::getAffectedRows();
+        $execute = self::$drive->executeQuery($sql,$data);
+        $this->affected_rows = self::$drive::getAffectedRows();
+        return  $execute;
+    }
 }
