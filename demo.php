@@ -5,7 +5,7 @@ include "./vendor/autoload.php";
 /*--------------------------------------------------------------------------------------------------------------------*/
 ///初始化配置
 $db     = new \EasyDb\Db();
-$config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
+$config = \EasyDb\Config\MysqlConfig::set('192.168.101.128','ll','root','root');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
