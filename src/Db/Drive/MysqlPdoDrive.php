@@ -29,11 +29,9 @@ class MysqlPdoDrive implements Drive
         try {
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
-            var_export($this->pdo->errorInfo());
             return $pdo;
         }catch (PDOException $e) {
             throw  new DbException($e->getMessage());
-//            throw new DbException('not found db');
         }
     }
 
