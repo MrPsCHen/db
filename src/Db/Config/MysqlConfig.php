@@ -5,12 +5,12 @@ namespace EasyDb\Config;
 
 class MysqlConfig extends Config
 {
-    protected string     $host       = '';
-    protected int        $port       = 3306;
-    protected string     $database   = '';
-    protected string     $username   = 'root';
-    protected string     $password   = '';
-
+    protected           string $host           = '';
+    protected           int    $port           = 3306;
+    protected           string $database       = '';
+    protected           string $username       = 'root';
+    protected           string $password       = '';
+    protected static    string $prefix         = '';
 
     public function __toString()
     {
@@ -34,6 +34,10 @@ class MysqlConfig extends Config
         $ins->setPassword($password);
         $ins->setPort($port);
         return $ins;
+    }
+
+    public static function setPrefix($prefix){
+        self::$prefix = $prefix;
     }
 
     public function pdoDsn(): string
@@ -125,11 +129,12 @@ class MysqlConfig extends Config
     public function out(): array
     {
         return [
-            'host'      =>$this->getHost(),
-            'port'      =>$this->getPort(),
-            'database'  =>$this->getDatabase(),
-            'username'  =>$this->getUsername(),
-            'password'  =>$this->getPassword(),
+            'host'      => $this->getHost(),
+            'port'      => $this->getPort(),
+            'database'  => $this->getDatabase(),
+            'username'  => $this->getUsername(),
+            'password'  => $this->getPassword(),
+            'prefix'    => self::$prefix
         ];
 
     }

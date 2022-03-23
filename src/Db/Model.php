@@ -16,14 +16,15 @@ class Model extends Builder
     protected   bool    $formatTile_flag    = false;
     protected   array   $field_display      = [];
     protected   array   $field_filter       = [];
+    protected   bool    $table_name_lower   = true;
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function __construct($table = null)
     {
         parent::$drive = Db::getDrive();
-        parent::__construct($table ?? basename(str_replace('\\', '/', get_class($this))));
+        parent::__construct($table ?? $this->_get_table_name());
         parent::bind(parent::$drive, self::$table);
     }
 
@@ -41,7 +42,7 @@ class Model extends Builder
      * @param array $field
      * @return $this
      */
-    public function timeFormat($field = ['create_time','update_time']): Model
+    public function timeFormat(array $field = ['create_time','update_time']): Model
     {
         $this->formatTile_flag = true;
         !empty($field) && $this->format_time = $field;
@@ -132,6 +133,16 @@ class Model extends Builder
         }catch (DbException $exception){
 
         }
+    }
+
+    /**
+     * 获取数据表名称
+     */
+    private function _get_table_name(): string
+    {
+        $table_name = basename(str_replace('\\', '/', get_class($this)));
+        if($this->table_name_lower) $table_name = strtolower($table_name);
+        return $table_name;
     }
 
 

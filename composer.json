@@ -18,7 +18,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-      "ext-pdo": "*",
-      "ext-json": "*"
+        "php": "^7.4",
+        "ext-pdo": "*",
+        "ext-json": "*"
     }
 }

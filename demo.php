@@ -5,10 +5,17 @@ include "./vendor/autoload.php";
 /*--------------------------------------------------------------------------------------------------------------------*/
 ///初始化配置
 $db     = new \EasyDb\Db();
-$config = \EasyDb\Config\MysqlConfig::set('192.168.101.128','ll','root','root');
+$config = \EasyDb\Config\MysqlConfig::set('10.0.0.10','cloud-master','root','root');
+//设置表前缀
+//$config::setPrefix('app_');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
+try {
+    var_export($db->testConnect());
+} catch (\EasyDb\Exception\DbException $e) {
+    var_export($e);
+}
 
 
 
