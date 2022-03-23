@@ -15,8 +15,8 @@ class Table implements TableType
     protected static    bool    $debug          = true;
     protected static    ?Drive  $drive          = null;
     protected static    ?Config $config         = null;
-    protected           string  $table          = '';
     protected           string  $prefix         = '';
+    protected           string  $table          = '';
     protected           array   $full_fields    = [];
     protected           array   $field_full     = [];
     protected           array   $field_param    = [];
@@ -29,10 +29,9 @@ class Table implements TableType
     /**
      * @param string $table
      * @param string $prefix
-     * @param array $option
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
-    public function __construct($table = '',$prefix = '',$option = [])
+    public function __construct(string $table = '', string $prefix = '')
     {
         $this->prefix   = $prefix;
         $this->table    = $table;
@@ -49,7 +48,7 @@ class Table implements TableType
     }
 
     /**
-     * @param \EasyDb\Drive\Drive|null $drive
+     * @param Drive|null $drive
      */
     public static function setDrive(?Drive $drive): void
     {
@@ -57,12 +56,12 @@ class Table implements TableType
     }
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     protected function format(){
         ///查询表结构
         if(!self::$drive)return;
-        $table_information = self::$drive->baseQuery("show full fields from {$this->prefix}{$this->table};");
+        $table_information = self::$drive->baseQuery("show full fields from " . $this->prefix . $this->table . ";");
 
         ///是否抛出异常:
         /// 1.$debug 为true
@@ -104,7 +103,7 @@ class Table implements TableType
         $tmp = '';
         foreach ($fields as $field)
         {
-            $tmp.= "`{$this->prefix}{$this->table}`.`$field`,";
+            $tmp.= "`" . $this->prefix . $this->table . "`.`" . $field . "`,";
         }
         empty($tmp) && $tmp = '*';
         return rtrim($tmp,',');
@@ -115,7 +114,7 @@ class Table implements TableType
      * @param array $field
      * @return array
      */
-    public function unionFiled($field = []):array
+    public function unionFiled(array $field = []):array
     {
         if(!empty($this->field_full)) return array_intersect($field,$this->field_full);
         return $field;

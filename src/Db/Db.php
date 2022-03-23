@@ -33,7 +33,7 @@ class Db
 
     /**
      * @return Drive\Drive
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public static function getDrive(): Drive\Drive
     {
@@ -46,15 +46,16 @@ class Db
      */
     public static function setDrive(Drive\Drive $drive): void
     {
+
         $drive->setConfig(self::$config);
         self::$drive = $drive;
     }
 
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
-    public static function table($table):Query
+    public static function table(string $table):Query
     {
         return Query::bind(self::$drive,$table);
     }

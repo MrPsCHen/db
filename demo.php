@@ -5,10 +5,17 @@ include "./vendor/autoload.php";
 /*--------------------------------------------------------------------------------------------------------------------*/
 ///初始化配置
 $db     = new \EasyDb\Db();
-$config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
+$config = \EasyDb\Config\MysqlConfig::set('10.0.0.10','cloud-master','root','root');
+//设置表前缀
+//$config::setPrefix('app_');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
+try {
+    var_export($db->testConnect());
+} catch (\EasyDb\Exception\DbException $e) {
+    var_export($e);
+}
 
 
 
@@ -46,7 +53,7 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 //
 //
 //#count
-////$ins = \EasyDb\Db::table('user');
+$ins = \EasyDb\Db::table('account');
 ////
 ////$ins->limit(1,10)->select();
 //
@@ -75,10 +82,10 @@ $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 /**
  * 基础查询
  */
-$user = \EasyDb\Db::table('user');
-//var_export($user->where([['username'=>'admin']])->select()->toArray());
-
-var_export($user->where(['id','in',[1,2]])->count());
+//$user = \EasyDb\Db::table('user');
+////var_export($user->where([['username'=>'admin']])->select()->toArray());
+//
+//var_export($user->where(['id','in',[1,2]])->count());
 
 /**
  * 修改

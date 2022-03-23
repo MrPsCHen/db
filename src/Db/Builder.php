@@ -8,10 +8,10 @@ use EasyDb\Exception\DbException;
 
 class Builder extends Query
 {
-    public $affected_rows = 0;
+    public int $affected_rows = 0;
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function __construct($table)
     {
@@ -22,7 +22,7 @@ class Builder extends Query
 
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function update(array $array): bool
     {
@@ -32,7 +32,7 @@ class Builder extends Query
     /**
      * @param array $array
      * @return int
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function insert(array $array): int
     {
@@ -40,7 +40,7 @@ class Builder extends Query
     }
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function delete(): bool
     {
@@ -62,7 +62,7 @@ class Builder extends Query
 
     /**
      * 执行插入逻辑
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     private function _insert(array $data):bool
     {
@@ -93,7 +93,7 @@ class Builder extends Query
 
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     private function _delete(): bool
     {
@@ -109,7 +109,7 @@ class Builder extends Query
 
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     private function _update(array $data): bool
     {

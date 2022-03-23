@@ -80,12 +80,13 @@ class Query
     /*--------------------------------------------------------------------------------------------------------------- */
     //初始化方法
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public static function bind(Drive $drive, $table): Query
     {
         self::$drive = $drive;
         self::$table = $table;
+        if(is_array($config = $drive->getConfig()->out()) && isset($config['prefix']))self::$prefix = $config['prefix'];
         $instance = new self();
         $instance->setTable($table);
         return $instance;
@@ -179,7 +180,7 @@ class Query
 
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function tableStruct(): Table
     {
@@ -278,7 +279,7 @@ class Query
 
     /**
      * @param string $table
-     * @throws \EasyDb\Exception\DbException
+     * @throws DbException
      */
     public function setTable(string $table): void
     {

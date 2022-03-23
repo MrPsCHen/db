@@ -26,15 +26,14 @@ class MysqlPdoDrive implements Drive
         }
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
+
         try {
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
-            return $pdo;
-        }catch (PDOException $e) {
-
+        }catch (\PDOException $exception){
+            return null;
         }
-
-        return null;
+        return $pdo;
     }
 
     /**
@@ -49,9 +48,13 @@ class MysqlPdoDrive implements Drive
         self::$charset = $charset;
     }
 
+    /**
+     * @throws DbException
+     */
     public function testConnect(): bool
     {
-        return true;
+
+        return (bool)$this->connect();
     }
 
     /**
