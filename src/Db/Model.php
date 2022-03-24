@@ -23,8 +23,10 @@ class Model extends Builder
      */
     public function __construct($table = null)
     {
+        self::$table = $table ?? $this->_get_table_name();
         parent::$drive = Db::getDrive();
-        parent::__construct($table ?? $this->_get_table_name());
+        parent::__construct(self::$table);
+
         parent::bind(parent::$drive, self::$table);
     }
 
@@ -66,7 +68,7 @@ class Model extends Builder
     }
 
     protected function _date($time){
-        if(strlen($time) == 10){
+        if(strlen((string)$time) == 10){
             return date("Y-m-d H:i:s",$time);
         }
         return $time;
