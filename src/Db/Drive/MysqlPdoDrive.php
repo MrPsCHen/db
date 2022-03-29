@@ -30,6 +30,8 @@ class MysqlPdoDrive implements Drive
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
         }catch (\PDOException $exception){
+            self::$error_msg = $exception->getMessage();
+            self::$error_code = $exception->getCode();
             return null;
         }
         return $pdo;
@@ -72,7 +74,7 @@ class MysqlPdoDrive implements Drive
             return [];
         }else{
 
-            throw new DbException(json_encode($this->pdo->errorInfo()));
+            throw new DbException(self::$error_msg);
         }
     }
 
