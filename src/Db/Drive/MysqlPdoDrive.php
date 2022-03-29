@@ -71,7 +71,8 @@ class MysqlPdoDrive implements Drive
             }
             return [];
         }else{
-            throw new DbException('not connection');
+
+            throw new DbException(json_encode($this->pdo->errorInfo()));
         }
     }
 

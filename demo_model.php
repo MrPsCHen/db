@@ -2,16 +2,12 @@
 include "./vendor/autoload.php";
 include "user.php";
 
-$config = \EasyDb\Config\MysqlConfig::set('192.168.200.3','iot','root','root');
+$config = \EasyDb\Config\MysqlConfig::set('10.0.0.10','cloud-master','root','root');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
 
-$user = new user();
-try {
-    $user->setTable('user');
-} catch (\EasyDb\Exception\DbException $e) {
-}
+$user = new user('account');
 var_export($user->filter(['password'])->timeFormat()->find());
 
 
