@@ -24,7 +24,10 @@ class Model extends Builder
     public function __construct($table = null)
     {
         self::$table = $table ?? $this->_get_table_name();
+        self::$table = Db::getDrive()->getConfig()->out()['prefix'].self::$table;
         parent::$drive = Db::getDrive();
+
+
         parent::__construct(self::$table);
 
         parent::bind(parent::$drive, self::$table);
