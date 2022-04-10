@@ -17,7 +17,6 @@ class Model extends Builder
     protected   array   $field_display      = [];
     protected   array   $field_filter       = [];
     protected   bool    $table_name_lower   = true;
-
     /**
      * @throws DbException
      */
