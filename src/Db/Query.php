@@ -86,7 +86,6 @@ class Query
     {
         self::$drive = $drive;
         self::$table = $table;
-        if(is_array($config = $drive->getConfig()->out()) && isset($config['prefix']))self::$prefix = $config['prefix'];
         $instance = new self();
         $instance->setTable($table);
         return $instance;

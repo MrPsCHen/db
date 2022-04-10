@@ -62,7 +62,7 @@ class Db
         }else{
             $prefix = '';
         }
-        return Query::bind(self::$drive,$prefix.$table);
+        return Query::bind(self::$drive,$table);
     }
 
     public static function Instance()

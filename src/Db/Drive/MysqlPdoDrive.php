@@ -88,7 +88,6 @@ class MysqlPdoDrive implements Drive
         self::$error_msg        = '';                                   //
         self::$error_code       = 0;                                    //
         $instance               = $this->pdo->prepare($sql);            //
-        echo "\n";
         foreach ($array as $key =>$val){
             $instance->bindParam(":$key",$array[$key]);
         }
