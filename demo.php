@@ -1,13 +1,12 @@
 <?php
 
 include "./vendor/autoload.php";
-
 /*--------------------------------------------------------------------------------------------------------------------*/
 ///初始化配置
 $db     = new \EasyDb\Db();
-$config = \EasyDb\Config\MysqlConfig::set('10.0.0.10','cloud-master','root','root');
+$config = \EasyDb\Config\MysqlConfig::set('10.0.0.9','app','root','root');
 //设置表前缀
-//$config::setPrefix('app_');
+$config::setPrefix('app_');
 $drive  = new \EasyDb\Drive\MysqlPdoDrive();
 \EasyDb\Db::setConfig($config);
 \EasyDb\Db::setDrive($drive);
@@ -82,7 +81,7 @@ try {
 /**
  * 基础查询
  */
-$user = \EasyDb\Db::table('user');
+$user = \EasyDb\Db::table('account');
 //var_export($user->where([['username'=>'admin']])->select()->toArray());
 
 var_export($user->where(['id','in',[1,2]])->count());

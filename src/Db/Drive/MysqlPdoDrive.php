@@ -29,7 +29,7 @@ class MysqlPdoDrive implements Drive
         try {
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
-        }catch (\PDOException $exception){
+        }catch (PDOException $exception){
             self::$error_msg = $exception->getMessage();
             self::$error_code = $exception->getCode();
             return null;

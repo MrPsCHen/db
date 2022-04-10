@@ -55,9 +55,14 @@ class Db
     /**
      * @throws DbException
      */
-    public static function table(string $table):Query
+    public static function table(string $table,$prefix = null):Query
     {
-        return Query::bind(self::$drive,$table);
+        if($prefix === null){
+            $prefix = ((self::$config)->out()['prefix']);
+        }else{
+            $prefix = '';
+        }
+        return Query::bind(self::$drive,$prefix.$table);
     }
 
     public static function Instance()
