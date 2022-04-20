@@ -10,6 +10,11 @@
             "EasyDb\\Exception\\": "src/Db/Exception"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\": "test/"
+        }
+    },
     "authors": [
         {
             "name": "PS Chen",

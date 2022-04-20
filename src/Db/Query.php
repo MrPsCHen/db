@@ -108,7 +108,7 @@ class Query
         $sql.= self::_limit();
         /** 输出模式,如果为is_out_sql true 不执行查询*/
         $this->sql_string = $sql;
-        !$this->is_out_sql && ($this->result = self::$drive->baseQuery($sql));
+        $this->result = self::$drive->baseQuery($sql);
         return $this;
     }
 
@@ -319,7 +319,7 @@ class Query
      * @param string $logic 连接逻辑 AND OR
      * @return string
      */
-    protected function formatConditionsArray(array $condition, $logic = 'AND'): string
+    protected function formatConditionsArray(array $condition, string $logic = 'AND'): string
     {
 
         $temp = '';
@@ -341,7 +341,8 @@ class Query
                 }
                 $temp.= " $logic $item[0] $item[1] $item[2] ";
             }else {
-                $temp_deep = $this->formatConditionsArray($item);
+//                $logic = !is_array($condition[0]) ? 'AND' : 'OR';
+                $temp_deep = $this->formatConditionsArray($item,"AND");
                 count($item)>=2 && $temp_deep = "($temp_deep) ";
                 $temp= trim($temp)." OR ".$temp_deep;
             }
@@ -350,6 +351,11 @@ class Query
         return ltrim($temp,' OR ');
     }
 
+    /**
+     *
+     * @param $item mixed 查询字段
+     * @return bool
+     */
     private function _trinomialCheck($item):bool{
         if(!is_array($item)) {
             return false;
