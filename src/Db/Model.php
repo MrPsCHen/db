@@ -87,18 +87,6 @@ class Model extends Builder
         return $this;
     }
 
-    /**
-     * 过滤器 不显示部分字段
-     * @param array $filed
-     * @return $this
-     */
-    public function filter(array $filed): Model
-    {
-        $this->field_filter = $filed;
-        return $this;
-    }
-
-
     public function select(): Query
     {
         $this->_output_filed();

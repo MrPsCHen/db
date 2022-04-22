@@ -1,4 +1,5 @@
 <?php
+
 namespace EasyDb;
 
 use EasyDb\Config\config;
@@ -8,13 +9,17 @@ use EasyDb\Exception\DbException;
 class Db
 {
     protected static config $config;
-    protected static Drive\Drive  $drive;
+    protected static Drive\Drive $drive;
 
+    /**
+     * @throws DbException
+     */
     public function testConnect()
     {
-        if(empty(self::$drive))throw DbException::point(102);
+        if (empty(self::$drive)) throw DbException::point(102);
         return self::$drive->testConnect();
     }
+
     /**
      * @return config
      */
@@ -37,7 +42,7 @@ class Db
      */
     public static function getDrive(): Drive\Drive
     {
-        if(!isset(self::$drive))throw new DbException('未初始化');
+        if (!isset(self::$drive)) throw new DbException('未初始化');
         return self::$drive;
     }
 
@@ -55,18 +60,26 @@ class Db
     /**
      * @throws DbException
      */
-    public static function table(string $table,$prefix = null):Query
+    public static function table(string $table, $prefix = null): Query
     {
-        if($prefix === null){
+        if ($prefix === null) {
             $prefix = ((self::$config)->out()['prefix']);
-        }else{
-            $prefix = '';
+            $prefix && Query::setPrefix($prefix);
         }
-        return Query::bind(self::$drive,$prefix.$table);
+        return Query::bind(self::$drive, $table);
     }
 
-    public static function Instance()
+    /**
+     * @throws DbException
+     */
+    public static function build(string $table, $prefix = null): ?Builder
     {
+        if($prefix === null)
+        {
+            $prefix = ((self::$config)->out()['prefix']);
+        }
+        Builder::setPrefix($prefix);
+        return Builder::bind(self::$drive,$table);
 
     }
 

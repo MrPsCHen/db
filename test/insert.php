@@ -12,10 +12,10 @@ $drive  = new MysqlPdoDrive();
 $config::setPrefix('app_');
 Db::setConfig($config);
 Db::setDrive($drive);
+
+
 try {
-    $result = Db::table('access')->join('collection')->where(['id'=>"1 "])->find();
-    var_export($result);
-} catch (\Exception $e) {
+    Db::build("test")->where('id',22)->field(["name"])->update(["2222"])->apply();
+} catch (DbException $e) {
     var_export($e->getMessage());
 }
-

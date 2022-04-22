@@ -15,11 +15,13 @@ class Table implements TableType
     protected static    bool    $debug          = true;
     protected static    ?Drive  $drive          = null;
     protected static    ?Config $config         = null;
+    protected           array   $alias          = [];
     protected           string  $prefix         = '';
     protected           string  $table          = '';
     protected           array   $full_fields    = [];
     protected           array   $field_full     = [];
     protected           array   $field_param    = [];
+    protected           string  $auto_increment = '';
     protected           array   $primary_key    = [];//主键字段
     protected           array   $field_unique   = [];//唯一字段
     protected           array   $field_not_null = [];//字段不为空
@@ -31,7 +33,7 @@ class Table implements TableType
      * @param string $prefix
      * @throws DbException
      */
-    public function __construct(string $table = '', string $prefix = '')
+    public function __construct(string $table = '', string $prefix = '',Drive $drive = null)
     {
         $this->prefix   = $prefix;
         $this->table    = $table;
@@ -62,13 +64,12 @@ class Table implements TableType
         ///查询表结构
         if(!self::$drive)return;
         $table_information = self::$drive->baseQuery("show full fields from " . $this->prefix . $this->table . ";");
-
-        ///是否抛出异常:
+        /// 是否抛出异常:
         /// 1.$debug 为true
         /// 2.表结构信息为空
         /// 3.错误代码不为0
-        if(self::$debug && empty($table_information) && self::$drive::getErrorCode()){
-            throw new DbException(self::$drive::getErrorMessage(),self::$drive::getErrorCode());
+        if(self::$debug && empty($table_information) && self::$drive->getErrorCode()){
+            throw new DbException(self::$drive->getErrorMessage(),self::$drive->getErrorCode());
         }
 
         foreach ($table_information as $key => $information)
@@ -76,6 +77,7 @@ class Table implements TableType
             if ($information['Key'] == 'PRI') $this->primary_key[$key]      = $information['Field'];
             if ($information['Key'] == 'UNI') $this->field_unique[$key]     = $information['Field'];
             if ($information['Null'] == 'No') $this->field_not_null[$key]   = $information['Field'];
+            if ($information['Extra'] == 'auto_increment') $this->auto_increment = $information['Field'];
             $this->field_full[$key]     = $information['Field'];
             $this->field_comment[$key]  = $information['Comment'];
             $this->field_default[$key]  = $information['Default'];
@@ -91,7 +93,7 @@ class Table implements TableType
     {
         $bad_field = [];
         foreach ($fields as $key => $field) {
-            if (in_array($field, $this->field_full)) continue;
+            if (in_array($field, $this->field_full) || in_array($key,$this->field_full)) continue;
             $bad_field[$key] = $field;
         }
         return $bad_field;
@@ -101,9 +103,10 @@ class Table implements TableType
     public function formatFields(array $fields):string
     {
         $tmp = '';
-        foreach ($fields as $field)
+        foreach ($fields as $key => $field)
         {
-            $tmp.= "`" . $this->prefix . $this->table . "`.`" . $field . "`,";
+            $sqlField = !is_numeric($key) ? "$key` AS `$field" : $field;
+            $tmp.= "`$this->prefix$this->table`.`$sqlField`,";
         }
         empty($tmp) && $tmp = '*';
         return rtrim($tmp,',');
@@ -127,6 +130,45 @@ class Table implements TableType
     {
         return $this->field_full;
     }
+
+    public function getFields(): array
+    {
+        return array_diff($this->field_full,[$this->auto_increment]);
+    }
+
+    /**
+     * @return array
+     */
+    public function getPrimaryKey(): array
+    {
+        return $this->primary_key;
+    }
+
+    /**
+     * @param array $alias
+     */
+    public function setAlias(array $alias): void
+    {
+        $this->alias = $alias;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrefix(): string
+    {
+        return $this->prefix;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTable(): string
+    {
+        return $this->table;
+    }
+
+
 
 
 }
