@@ -3,11 +3,13 @@
 
 namespace EasyDb\Drive;
 use EasyDb\Config\config;
+use EasyDb\Db;
 use EasyDb\Exception\DbException;
+use EasyDb\Result;
 use PDO;
 use PDOException;
 
-class MysqlPdoDrive implements Drive
+class MysqlPdoDrive extends Drive
 {
     protected           Config  $Config;
     protected           ?PDO    $pdo            = null;
@@ -15,6 +17,7 @@ class MysqlPdoDrive implements Drive
     protected static    int     $affected_rows  = 0;
     protected static    string  $error_msg      = '';
     protected static    string  $error_code     = '0';
+    protected static    array   $last_insert_id = [];
 
     /**
      * @throws DbException
@@ -26,11 +29,13 @@ class MysqlPdoDrive implements Drive
         }
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
-
         try {
             $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
-        }catch (\PDOException $exception){
+        }catch (PDOException $exception){
+            self::$error_msg = $exception->getMessage();
+            self::$error_code= $exception->getCode();
+
             return null;
         }
         return $pdo;
@@ -60,41 +65,73 @@ class MysqlPdoDrive implements Drive
     /**
      * @throws DbException
      */
-    public function baseQuery(string $sql): array
+    public function baseQuery(string $sql, array $bindParams = []): ?array
     {
+        $result = null;
         self::connect();
-        if($this->pdo){
-            $instance           = $this->pdo->query($sql);
-            self::$error_code   = $this->pdo->errorCode();
-            self::$error_msg    = json_encode($this->pdo->errorInfo());
-            if($instance){
-                return $instance->fetchAll(PDO::FETCH_ASSOC);
+
+        if($this->pdo) {
+            if (empty($bindParams)) {
+                $result = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+            } else {
+                $pdo = $this->pdo->prepare($sql);
+
+                foreach ($bindParams as $k =>$v)
+                {
+
+                    $pdo->bindParam($k+1,$bindParams[$k]);
+                }
+                $pdo->execute();
+                $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
             }
-            return [];
-        }else{
-            throw new DbException('not connection');
         }
+
+        return $result;
     }
 
     /**
-     * @throws \EasyDb\Exception\DbException
+     * @return bool 提交一个事务
      */
-    public function executeQuery(string $sql, array $array): bool
+    public function beginTransaction(): bool
     {
-        self::connect();                                                //连接数据库
-        self::$affected_rows    = 0;                                    //
-        self::$error_msg        = '';                                   //
-        self::$error_code       = 0;                                    //
-        $instance               = $this->pdo->prepare($sql);            //
-        echo "\n";
-        foreach ($array as $key =>$val){
-            $instance->bindParam(":$key",$array[$key]);
+        return $this->pdo->beginTransaction();
+    }
+
+    /**
+     * @return bool 执行事务
+     */
+    public function commit(): bool
+    {
+        return $this->pdo->commit();
+    }
+
+    /**
+     * @return bool 滚回
+     */
+    public function rollBack(): bool
+    {
+        return $this->pdo->rollBack();
+    }
+
+    /**
+     * @throws DbException 执行查询
+     */
+    public function executeQuery(string $sql, array $array): Result
+    {
+        self::connect();//连接数据库
+        foreach ($array as $k => $section){
+            $pdo = $this->pdo->prepare($sql); //预处理
+            foreach ($section as $kk => $para){
+                if(is_numeric($kk)){
+                    $pdo->bindParam($kk+1,$array[$k][$kk]);//绑定参数
+                }else{
+                    $pdo->bindParam(":$kk",$array[$k][$kk]);//绑定参数
+                }
+            }
+            $pdo->execute();
         }
-        $back                   = $instance->execute();                 //
-        self::$affected_rows    = $instance->rowCount();                //
-        self::$error_code       = $instance->errorCode();               //
-        self::$error_msg        = json_encode($instance->errorInfo());  //
-        return $back;
+        return new Result([]);
     }
     public function getConfig():config
     {
@@ -104,12 +141,12 @@ class MysqlPdoDrive implements Drive
     /**
      * @return int
      */
-    public static function getAffectedRows(): int
+    public function getAffectedRows(): int
     {
         return self::$affected_rows;
     }
 
-    public static function getErrorCode(): int
+    public function getErrorCode(): int
     {
         if(is_numeric(self::$error_code)){
             return (int)self::$error_code;
@@ -118,8 +155,11 @@ class MysqlPdoDrive implements Drive
         }
     }
 
-    public static function getErrorMessage(): string
+    public function getErrorMessage(): string
     {
         return self::$error_msg;
     }
+
+
+
 }

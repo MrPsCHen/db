@@ -20,13 +20,13 @@ use Throwable;
  */
 class DbException extends Exception
 {
-    const CODE = [
+    static array $CODE = [
         102=>'数据库未初始化',
         103=>'未设置配置数据'
     ];
 
 
-    public function __construct($message = "", $code = 0, Throwable $previous = null)
+    public function __construct($message = "", $code = 2, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
@@ -34,8 +34,12 @@ class DbException extends Exception
     public static function point(int $code): DbException
     {
         $message = '未知错误';
-        $message = self::CODE[$code] ?? $message;
+        $message = self::$CODE[$code] ?? $message;
         return new self($message,$code);
+    }
+
+    public function set(int $code ,string $message){
+        self::$CODE[$code] = $message;
     }
 
 

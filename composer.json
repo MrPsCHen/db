@@ -10,6 +10,11 @@
             "EasyDb\\Exception\\": "src/Db/Exception"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\": "test/"
+        }
+    },
     "authors": [
         {
             "name": "PS Chen",
@@ -18,7 +23,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.4",
+        "php": ">=8.1",
         "ext-pdo": "*",
         "ext-json": "*"
     }

@@ -17,14 +17,18 @@ class Model extends Builder
     protected   array   $field_display      = [];
     protected   array   $field_filter       = [];
     protected   bool    $table_name_lower   = true;
-
     /**
      * @throws DbException
      */
     public function __construct($table = null)
     {
+        self::$table = $table ?? $this->_get_table_name();
+
         parent::$drive = Db::getDrive();
-        parent::__construct($table ?? $this->_get_table_name());
+
+
+        parent::__construct(parent::$drive->getConfig()->out()['prefix'].self::$table);
+
         parent::bind(parent::$drive, self::$table);
     }
 
@@ -66,7 +70,7 @@ class Model extends Builder
     }
 
     protected function _date($time){
-        if(strlen($time) == 10){
+        if(strlen((string)$time) == 10){
             return date("Y-m-d H:i:s",$time);
         }
         return $time;
@@ -82,18 +86,6 @@ class Model extends Builder
         $this->field_display = $filed;
         return $this;
     }
-
-    /**
-     * 过滤器 不显示部分字段
-     * @param array $filed
-     * @return $this
-     */
-    public function filter(array $filed): Model
-    {
-        $this->field_filter = $filed;
-        return $this;
-    }
-
 
     public function select(): Query
     {
