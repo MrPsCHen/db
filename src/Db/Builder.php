@@ -30,6 +30,7 @@ class Builder extends Query
             $this->mysqlPdoDrive = $drive;
         }
         Table::setDrive($drive);
+
         self::$table_struct = new Table($table, self::$prefix);
     }
 

@@ -72,7 +72,7 @@ class Query
      */
     public function select(): Result
     {
-        $table      = self::$prefix.self::$table;
+        $table      = static::$prefix.static::$table;
         $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
@@ -227,6 +227,7 @@ class Query
     {
         $_join              = '';
         $masterTable        = self::$table_struct;
+        if(!($masterTable instanceof Table))throw new DbException("table not install");
         $masterKey          = $masterTable->getPrimaryKey();
         $masterPrimaryKey   = reset($masterKey);
         $masterField        = $masterTable->getTable().'_'.$masterPrimaryKey;

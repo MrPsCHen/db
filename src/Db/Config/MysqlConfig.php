@@ -125,7 +125,6 @@ class MysqlConfig extends Config
         $this->password = $password;
     }
 
-
     public function out(): array
     {
         return [

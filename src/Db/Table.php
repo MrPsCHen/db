@@ -79,6 +79,7 @@ class Table implements TableType
      */
     protected function format(){
         ///查询表结构
+
         if(!self::$drive)return;
         $table_information = self::$drive->baseQuery("show full fields from " . $this->prefix . $this->table . ";");
         /// 是否抛出异常:

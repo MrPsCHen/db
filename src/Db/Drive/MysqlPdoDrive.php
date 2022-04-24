@@ -73,7 +73,6 @@ class MysqlPdoDrive extends Drive
         if($this->pdo) {
             if (empty($bindParams)) {
                 $result = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
             } else {
                 $pdo = $this->pdo->prepare($sql);
 
