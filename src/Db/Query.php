@@ -73,18 +73,20 @@ class Query
     public function select(): Result
     {
         $table      = self::$prefix.self::$table;
-        $fields     = empty($this->fields)?'*':$this->fields;
-        $baseSql    = "SELECT $fields FROM $table {$this->_join()} ";
+        $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
         $this->order_by             && $baseSql .= "ORDER BY $this->order_by";
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
     }
 
+    /**
+     * @throws DbException
+     */
     public function find(): Result|array
     {
         $table = self::$prefix.self::$table;
-        $baseSql = "SELECT * FROM $table {$this->_join()}";
+        $baseSql = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
         $baseSql.= " WHERE $this->where_para";
         $baseSql.= " LIMIT 0,1";
         $result = self::$drive->baseQuery($baseSql,$this->bind_params);
@@ -127,7 +129,7 @@ class Query
         return $this;
     }
 
-    public function field(mixed $field)
+    public function field(mixed $field): static
     {
         if(is_string($field)){
             $this->fields = explode(',',$field);
@@ -142,9 +144,13 @@ class Query
      */
     public function join(string|array|Table $table, string|array $on = null,string $JoinType = self::JOIN_TYPE_DEFAULT): static
     {
+
         if(is_string($table) && $table != self::$table){
             Table::setDrive(self::$drive);
             $this->join_table[] = [new Table($table,self::$prefix),$on,$JoinType];
+        }else if ($table instanceof Table){
+            $table->Drive(self::$drive);
+            $this->join_table[] = [$table,$on,$JoinType];
         }
         return $this;
     }
@@ -179,6 +185,22 @@ class Query
         return $where_para;
     }
 
+    protected function _outField():string
+    {
+        if(empty($this->fields) && empty($this->join_table)){
+            return "*";
+        }else{
+            !empty($this->fields) && self::$table_struct->setShowFields($this->fields);
+            $field_full = self::$table_struct->getFieldFull(true);
+            foreach ($this->join_table as $option){
+                list($table) = $option;
+                $field_full = array_merge($field_full,$table->getFieldFull(true));
+            }
+
+            return implode(',',$field_full);
+        }
+    }
+
     /**
      * @param $node
      * @return int 0:default,1:enum,2:OR连接
@@ -210,7 +232,6 @@ class Query
         $masterField        = $masterTable->getTable().'_'.$masterPrimaryKey;
         foreach ($this->join_table as $table){
             list($tabIns,$on,$type) = array_values($table);
-
             if($tabIns){
                 if(in_array($masterField,$tabIns->getFieldFull())){
                     $_join = "$type `{$tabIns->getPrefix()}{$tabIns->getTable()}` ON ";
