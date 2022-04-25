@@ -177,8 +177,8 @@ class Query
                     break;
                 default:
                     $this->bind_params[] = $node;
-                    if(count($key = explode('.',$key))==2){
-                        list($table,$field) = $key;
+                    if(count($key_param = explode('.',$key))==2){
+                        list($table,$field) = $key_param;
                     }else{
                         $table = $this->getTable();
                         $field = &$key;

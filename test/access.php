@@ -24,4 +24,4 @@ class access extends Model
 
 
 $model = new access();
-var_export($model->where(['app_collection.access_id'=> 1])->join(new Table('collection', 'app_'))->select()->toArray());
+var_export($model->where(['id'=>1])->find());
