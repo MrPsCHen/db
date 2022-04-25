@@ -85,7 +85,7 @@ class Query
      */
     public function find(): Result|array
     {
-        $table = self::$prefix.self::$table;
+        $table = static::$prefix.static::$table;
         $baseSql = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
         $baseSql.= " WHERE $this->where_para";
         $baseSql.= " LIMIT 0,1";
