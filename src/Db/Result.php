@@ -31,6 +31,10 @@ class Result
         return $this->gather;
     }
 
+    public function first(){
+        if(empty($this->result))return [];
+        return reset($this->result);
+    }
 
 
 }

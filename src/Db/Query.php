@@ -90,7 +90,7 @@ class Query
         $baseSql.= " WHERE $this->where_para";
         $baseSql.= " LIMIT 0,1";
         $result = self::$drive->baseQuery($baseSql,$this->bind_params);
-        return reset($result);
+        return (new Result($result))->first();
     }
 
     public function limit(int $index, int $length): static

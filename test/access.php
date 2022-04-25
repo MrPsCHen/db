@@ -24,4 +24,5 @@ class access extends Model
 
 
 $model = new access();
-var_export($model->where(['id'=>1])->find());
+//var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->find());
+var_export($model->where(['username'=>'admin1'])->find());
