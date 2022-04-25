@@ -177,7 +177,13 @@ class Query
                     break;
                 default:
                     $this->bind_params[] = $node;
-                    $where_para.= "$logic `{$this->getTable()}`.`$key`=? ";
+                    if(count($key = explode('.',$key))==2){
+                        list($table,$field) = $key;
+                    }else{
+                        $table = $this->getTable();
+                        $field = &$key;
+                    }
+                    $where_para.= "$logic `{$table}`.`$field`=? ";
 
             }
         }
