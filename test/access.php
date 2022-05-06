@@ -18,11 +18,16 @@ Db::setDrive( new MysqlPdoDrive());
 
 class access extends Model
 {
+    public string $table = "access";
 
-
+}
+class test extends Model{
+    public string $table = "test";
 }
 
 
 $model = new access();
-//var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->find());
-var_export($model->where(['username'=>'admin1'])->find());
+
+$test = new test();
+var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->find());
+//var_export($model->where(['username'=>'admin'])->find());

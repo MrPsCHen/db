@@ -11,7 +11,6 @@ use JetBrains\PhpStorm\Pure;
 
 class Builder extends Query
 {
-    protected static string $prefix = '';
     protected MysqlPdoDrive $mysqlPdoDrive;
     protected array $insert_value = [];
     protected array $insert_param = [];
@@ -26,12 +25,10 @@ class Builder extends Query
     protected function __construct(Drive $drive, mixed $table)
     {
         static::$drive = $drive;
-        if ($drive instanceof MysqlPdoDrive) {
-            $this->mysqlPdoDrive = $drive;
-        }
+        $this->mysqlPdoDrive = $drive;
         Table::setDrive($drive);
 
-        static::$table_struct = new Table($table, static::$prefix);
+        $this->table_struct = new Table($table, $this->prefix);
     }
 
     protected function __clone(): void
@@ -49,9 +46,10 @@ class Builder extends Query
     /**
      * @param string $prefix
      */
-    public static function setPrefix(string $prefix): void
+    public function setPrefix(string $prefix): void
     {
-        static::$prefix = $prefix;
+        $this->prefix = $prefix;
+//        static::$prefix = $prefix;
     }
 
 

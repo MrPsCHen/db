@@ -10,16 +10,15 @@ use EasyDb\Exception\DbException;
 class Model extends Builder
 {
     protected   bool    $table_name_lower   = true;
-
     /**
      * @throws DbException
      */
     public function __construct()
     {
-        static::$prefix       = Db::getConfig()->out()['prefix'];
-        static::$table        = empty(static::$table)?$this->_getTableNameFromClassName():static::$table;
-        static::$table_struct = new Table(static::$table,static::$prefix);
-        parent::__construct(Db::getDrive(),static::$table);
+        $this->prefix           = Db::getConfig()->out()['prefix'];
+        $this->table            = empty($this->table)?$this->_getTableNameFromClassName():$this->table;
+        $this->table_struct     = new Table($this->table,$this->prefix);
+        parent::__construct(Db::getDrive(),$this->table);
     }
     protected function _getTableNameFromClassName(): string
     {
