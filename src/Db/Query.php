@@ -51,10 +51,10 @@ class Query
      */
     public static function bind(Drive $drive, $table): Query
     {
-        self::$drive = $drive;
-        self::$table = $table;
+        static::$drive = $drive;
+        static::$table = $table;
         Table::setDrive($drive);
-        self::$table_struct = new Table($table,self::$prefix);
+        static::$table_struct = new Table($table,static::$prefix);
         return new self();
     }
 
@@ -63,7 +63,7 @@ class Query
      */
     public static function setPrefix(string $prefix): void
     {
-        self::$prefix = $prefix;
+        static::$prefix = $prefix;
     }
 
 
@@ -146,10 +146,10 @@ class Query
     {
 
         if(is_string($table) && $table != self::$table){
-            Table::setDrive(self::$drive);
-            $this->join_table[] = [new Table($table,self::$prefix),$on,$JoinType];
+            Table::setDrive(static::$drive);
+            $this->join_table[] = [new Table($table,static::$prefix),$on,$JoinType];
         }else if ($table instanceof Table){
-            $table->Drive(self::$drive);
+            $table->Drive(static::$drive);
             $this->join_table[] = [$table,$on,$JoinType];
         }
         return $this;
@@ -232,7 +232,7 @@ class Query
     private function _join(): string
     {
         $_join              = '';
-        $masterTable        = self::$table_struct;
+        $masterTable        = static::$table_struct;
         if(!($masterTable instanceof Table))throw new DbException("table not install");
         $masterKey          = $masterTable->getPrimaryKey();
         $masterPrimaryKey   = reset($masterKey);
