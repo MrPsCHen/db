@@ -38,7 +38,7 @@ class Builder extends Query
     /**
      * @throws DbException
      */
-    public static function bind(Drive $drive, $table): Builder
+    public static function bind(Drive $drive, $table,$prefix = null): Builder
     {
         return new static($drive, $table);
     }
@@ -49,7 +49,6 @@ class Builder extends Query
     public function setPrefix(string $prefix): void
     {
         $this->prefix = $prefix;
-//        static::$prefix = $prefix;
     }
 
 
@@ -78,7 +77,7 @@ class Builder extends Query
      */
     public function insert(array ...$input): static
     {
-        $FIELDS = empty($this->insert_value) ? static::$table_struct->getFields() : $this->fields;
+        $FIELDS = empty($this->insert_value) ? $this->table_struct->getFields() : $this->fields;
         for ($i = 0; $i < func_num_args(); $i++) {
             $this->insert_param[] = $this->_input(func_get_args()[$i], $FIELDS, $i);
         }
@@ -93,7 +92,7 @@ class Builder extends Query
      */
     public function update(array $input): static
     {
-        $FIELDS = empty($this->fields) ? static::$table_struct->getFields() : $this->fields;
+        $FIELDS = empty($this->fields) ? $this->table_struct->getFields() : $this->fields;
 
         $this->update_param = $this->_input($input,$FIELDS,0);
 

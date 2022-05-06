@@ -62,11 +62,7 @@ class Db
      */
     public static function table(string $table, $prefix = null): Query
     {
-        if ($prefix === null) {
-            $prefix = ((self::$config)->out()['prefix']);
-            $prefix && Query::setPrefix($prefix);
-        }
-        return Query::bind(self::$drive, $table);
+        return Query::bind(self::$drive, $table,$prefix);
     }
 
     /**
@@ -74,13 +70,7 @@ class Db
      */
     public static function build(string $table, $prefix = null): ?Builder
     {
-        if($prefix === null)
-        {
-            $prefix = ((self::$config)->out()['prefix']);
-        }
-        Builder::setPrefix($prefix);
-        return Builder::bind(self::$drive,$table);
-
+        return Builder::bind(self::$drive,$table,$prefix);
     }
 
 

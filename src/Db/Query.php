@@ -49,13 +49,16 @@ class Query
     /**
      * @throws DbException
      */
-    public static function bind(Drive $drive, $table): Query
+    public static function bind(Drive $drive, $table,$prefix = null): Query
     {
         $self = new self();
         static::$drive = $drive;
+
         Table::setDrive($drive);
-        $self->table = $table;
-        $self->table_struct = new Table($table);
+        $self->prefix   = $prefix??$drive->getConfig()->out()['prefix'];
+        $self->table    = $table;
+
+        $self->table_struct = new Table($table,$self->prefix);
         return $self;
     }
 
@@ -65,6 +68,7 @@ class Query
     public function setPrefix(string $prefix): void
     {
         $this->$prefix = $prefix;
+        var_export($this->prefix);
     }
 
 
