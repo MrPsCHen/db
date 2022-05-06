@@ -25,13 +25,13 @@ class Builder extends Query
      */
     protected function __construct(Drive $drive, mixed $table)
     {
-        self::$drive = $drive;
+        static::$drive = $drive;
         if ($drive instanceof MysqlPdoDrive) {
             $this->mysqlPdoDrive = $drive;
         }
         Table::setDrive($drive);
 
-        self::$table_struct = new Table($table, self::$prefix);
+        static::$table_struct = new Table($table, static::$prefix);
     }
 
     protected function __clone(): void
@@ -43,7 +43,7 @@ class Builder extends Query
      */
     public static function bind(Drive $drive, $table): Builder
     {
-        return new self($drive, $table);
+        return new static($drive, $table);
     }
 
     /**
@@ -51,7 +51,7 @@ class Builder extends Query
      */
     public static function setPrefix(string $prefix): void
     {
-        self::$prefix = $prefix;
+        static::$prefix = $prefix;
     }
 
 
@@ -80,7 +80,7 @@ class Builder extends Query
      */
     public function insert(array ...$input): static
     {
-        $FIELDS = empty($this->insert_value) ? self::$table_struct->getFields() : $this->fields;
+        $FIELDS = empty($this->insert_value) ? static::$table_struct->getFields() : $this->fields;
         for ($i = 0; $i < func_num_args(); $i++) {
             $this->insert_param[] = $this->_input(func_get_args()[$i], $FIELDS, $i);
         }
@@ -95,7 +95,7 @@ class Builder extends Query
      */
     public function update(array $input): static
     {
-        $FIELDS = empty($this->fields) ? self::$table_struct->getFields() : $this->fields;
+        $FIELDS = empty($this->fields) ? static::$table_struct->getFields() : $this->fields;
 
         $this->update_param = $this->_input($input,$FIELDS,0);
 
@@ -118,7 +118,7 @@ class Builder extends Query
         if($this->INSERT_FLAG){
             $fields = empty($this->fields)?$this->insert_value:$this->fields;
             $execute_sql = $this->_insert_sql($this->getTable(),$fields);
-            $result->addResult(self::$drive->executeQuery($execute_sql,$this->insert_param));
+            $result->addResult(static::$drive->executeQuery($execute_sql,$this->insert_param));
         }
         if($this->UPDATE_FLAG){
             $set = '';
@@ -126,7 +126,7 @@ class Builder extends Query
             $set = rtrim($set,' ,');
             $update_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
-            $result->addResult(self::$drive->executeQuery($update_sql,[array_merge(array_values($this->update_param),$this->bind_params)]));
+            $result->addResult(static::$drive->executeQuery($update_sql,[array_merge(array_values($this->update_param),$this->bind_params)]));
         }
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
         return $result;

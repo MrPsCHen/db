@@ -68,7 +68,7 @@ class MysqlPdoDrive extends Drive
     public function baseQuery(string $sql, array $bindParams = []): ?array
     {
         $result = null;
-        self::connect();
+        static::connect();
 
         if($this->pdo) {
             if (empty($bindParams)) {
