@@ -20,11 +20,19 @@ class Model extends Builder
         $this->table_struct     = new Table($this->table,$this->prefix);
         parent::__construct(Db::getDrive(),$this->table);
     }
+
+    public function page(int $page = 1,int $length = 20): static
+    {
+        $this->limit(($page-1)*$length,$length);
+        return $this;
+    }
+
     protected function _getTableNameFromClassName(): string
     {
         $table_name = basename(str_replace('\\', '/', get_class($this)));
         if($this->table_name_lower) $table_name = strtolower($table_name);
         return $table_name;
     }
+
 
 }

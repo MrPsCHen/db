@@ -80,6 +80,7 @@ class Query
         $table      = $this->prefix.$this->table;
         $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
+        $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
         $this->order_by             && $baseSql .= "ORDER BY $this->order_by";
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
@@ -90,12 +91,13 @@ class Query
      */
     public function find(): Result|array
     {
-        $table = $this->prefix.$this->table;
-        $baseSql = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
-        $baseSql.= " WHERE $this->where_para";
-        $baseSql.= " LIMIT 0,1";
-        $result = self::$drive->baseQuery($baseSql,$this->bind_params);
-        return (new Result($result))->first();
+        $table      = $this->prefix.$this->table;
+        $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
+        !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
+        $this->order_by             && $baseSql .= $this->order_by;
+        $this->limit                && $baseSql .= " LIMIT 0,1";
+        $this->order_by             && $baseSql .= "ORDER BY $this->order_by";
+        return (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
     }
 
     public function limit(int $index, int $length): static
@@ -104,8 +106,10 @@ class Query
         $this->limit[1] = $length;
         return $this;
     }
-    public function orderBy(string $sort = Query::ASC){
-
+    public function orderBy(string $sort = Query::ASC): static
+    {
+        $this->order_by = " ORDER BY $sort";
+        return $this;
     }
 
     /**
