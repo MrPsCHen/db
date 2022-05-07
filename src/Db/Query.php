@@ -98,6 +98,23 @@ class Query
         return (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
     }
 
+    /**
+     * @param bool $realValue
+     * @return mixed
+     * @throws DbException
+     */
+    public function count(bool $realValue = false): mixed
+    {
+        $table      = $this->prefix.$this->table;
+        $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";;
+        !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
+        $callback   = (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
+        if($realValue){
+            return reset($callback);
+        }else{
+            return $callback;
+        }
+    }
     public function limit(int $index, int $length): static
     {
         $this->limit[0] = $index;
@@ -109,6 +126,9 @@ class Query
         $this->order_by = " ORDER BY `$field` $sort";
         return $this;
     }
+
+
+
 
     /**
      * @return string
