@@ -6,6 +6,7 @@ use EasyDb\Db;
 use EasyDb\Drive\MysqlPdoDrive;
 use EasyDb\Exception\DbException;
 use EasyDb\Model;
+use EasyDb\Query;
 use EasyDb\Table;
 use Exception;
 
@@ -29,5 +30,5 @@ class test extends Model{
 $model = new access();
 
 $test = new test();
-var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->find());
+var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->orderBy('id',Query::DESC)->select()->toArray());
 //var_export($model->where(['username'=>'admin'])->find());

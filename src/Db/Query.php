@@ -82,7 +82,6 @@ class Query
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
-        $this->order_by             && $baseSql .= "ORDER BY $this->order_by";
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
     }
 
@@ -96,7 +95,6 @@ class Query
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT 0,1";
-        $this->order_by             && $baseSql .= "ORDER BY $this->order_by";
         return (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
     }
 
@@ -106,9 +104,9 @@ class Query
         $this->limit[1] = $length;
         return $this;
     }
-    public function orderBy(string $sort = Query::ASC): static
+    public function orderBy(string $field,string $sort = Query::ASC): static
     {
-        $this->order_by = " ORDER BY $sort";
+        $this->order_by = " ORDER BY `$field` $sort";
         return $this;
     }
 
