@@ -2,23 +2,24 @@
 
 namespace EasyDb;
 
-enum Logic
+enum Logic:string
 {
     /** 等于 */
-    case EQ;
+    case EQ = '=';
     /** 不等于 */
-    case NE;
+    case NE = '<>';
     /** 大于等于 */
-    case GE;
+    case GE = '>=';
     /** 大于 */
-    case GT;
+    case GT = '>';
     /** 小于等于 */
-    case LE;
+    case LE = '<=';
     /** 小于 */
-    case LT;
+    case LT = '<';
     /** 包含 */
-    case IN;
+    case IN = 'IN';
     /** 相似 */
-    case LIKE;
+    case LIKE = "LIKE";
+
 
 }

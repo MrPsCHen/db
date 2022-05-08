@@ -82,6 +82,7 @@ class Query
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
+
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
     }
 
@@ -106,7 +107,7 @@ class Query
     public function count(bool $realValue = false): mixed
     {
         $table      = $this->prefix.$this->table;
-        $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";;
+        $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $callback   = (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
         if($realValue){
@@ -197,13 +198,23 @@ class Query
     protected function _whereEnum(array $condition, string $logic = 'AND', bool $first = true): string
     {
         $where_para = "";
-        foreach ($condition as $key => $node) {
-            switch ($this->_checkEnumType($node)){
+        foreach ([$condition] as $key => $node) {
+            list($case,$enumString,$enumField) = $this->_checkEnumType($node);
+            switch ($case){
                 case 1:
                     $where_para.= "";
                     break;
                 case 2:
                     $where_para.= "OR ".$this->_whereEnum($node);
+                    break;
+                case 3:
+                    if(count($key_param = explode('.',$key))==2){
+                        list($table,$field) = $key_param;
+                    }else{
+                        $table = $this->getTable();
+                        $field = &$key;
+                    }
+                    $where_para.= "$logic `$table`.`$enumField` $enumString ";
                     break;
                 default:
                     $this->bind_params[] = $node;
@@ -213,8 +224,7 @@ class Query
                         $table = $this->getTable();
                         $field = &$key;
                     }
-                    $where_para.= "$logic `$table`.`$field`=? ";
-
+                    $where_para.= "$logic `$table`.`$field`= ? ";
             }
         }
         $first && $where_para = ltrim($where_para,"$logic ");
@@ -239,21 +249,30 @@ class Query
 
     /**
      * @param $node
-     * @return int 0:default,1:enum,2:OR连接
+     * @return array [0:default,1:enum,2:OR连接,附带数据]
      */
-    private function _checkEnumType($node): int
+    private function _checkEnumType($node): array
     {
         if(is_array($node)){
             if(count($node) == 3){
                 list($field,$logic,$value) = array_values($node);
-                if($logic instanceof Logic){
-                    return 1;
+                if($logic instanceof Logic || $logic = Logic::tryFrom($logic)){
+                    switch ($logic->name){
+                        case Logic::LIKE->name:
+                            return [3," LIKE $value",$field];
+                        case Logic::IN->name:
+                            $value = is_string($value)?$value:('(\''.implode("','",$value).'\')');
+                            return [3," IN $value",$field];
+                        default:
+                            return [3," $logic->value $value ",$field];
+                    }
                 }
+                return [1,[]];
             }
-            return 2;
+            return [2,[]];
         }
 
-        return 0;
+        return [0,[]];
     }
 
     /**
