@@ -83,6 +83,7 @@ class Query
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
 
+
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
     }
 
@@ -153,7 +154,8 @@ class Query
                 $this->where_para = "$condition=?";
             }
         }else if(is_array($condition)){
-            $this->where_para = $this->_whereEnum($condition);
+
+            $this->where_para = $this->_whereEnum([$condition],'OR');
         }else{
             throw new Exception("类型错误");
         }
@@ -189,19 +191,33 @@ class Query
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
+    protected function _outField():string
+    {
+        if(empty($this->fields) && empty($this->join_table)){
+            return "*";
+        }else{
+            !empty($this->fields) && $this->table_struct->setShowFields($this->fields);
+            $field_full = $this->table_struct->getFieldFull(true);
+            foreach ($this->join_table as $option){
+                list($table) = $option;
+                $field_full = array_merge($field_full,$table->getFieldFull(true));
+            }
+
+            return implode(',',$field_full);
+        }
+    }
     /**
      * @param array $condition
      * @param string $logic 关联逻辑:
-     * @param bool $first
      * @return string
      */
-    protected function _whereEnum(array $condition, string $logic = 'AND', bool $first = true): string
+    protected function _whereEnum(array $condition, string $logic = 'AND'): string
     {
         $where_para = "";
-        foreach ([$condition] as $key => $node) {
+        foreach ($condition as $key => $node) {
             list($case,$enumString,$enumField) = $this->_checkEnumType($node);
             switch ($case){
-                case 1:
+                case 0:
                     $where_para.= "";
                     break;
                 case 2:
@@ -227,25 +243,10 @@ class Query
                     $where_para.= "$logic `$table`.`$field`= ? ";
             }
         }
-        $first && $where_para = ltrim($where_para,"$logic ");
-        return $where_para;
+        return ltrim($where_para,"$logic ");
     }
 
-    protected function _outField():string
-    {
-        if(empty($this->fields) && empty($this->join_table)){
-            return "*";
-        }else{
-            !empty($this->fields) && $this->table_struct->setShowFields($this->fields);
-            $field_full = $this->table_struct->getFieldFull(true);
-            foreach ($this->join_table as $option){
-                list($table) = $option;
-                $field_full = array_merge($field_full,$table->getFieldFull(true));
-            }
 
-            return implode(',',$field_full);
-        }
-    }
 
     /**
      * @param $node
@@ -253,26 +254,38 @@ class Query
      */
     private function _checkEnumType($node): array
     {
+        $out_code   = 0;
+        $out_string = null;
+        $out_field  = null;
         if(is_array($node)){
             if(count($node) == 3){
                 list($field,$logic,$value) = array_values($node);
-                if($logic instanceof Logic || $logic = Logic::tryFrom($logic)){
+                if(!is_null($logic)&&($logic instanceof Logic || $logic = Logic::tryFrom($logic))){
                     switch ($logic->name){
                         case Logic::LIKE->name:
-                            return [3," LIKE $value",$field];
+                            $out_code   = 3;
+                            $out_string = " LIKE $value";
+                            break;
                         case Logic::IN->name:
                             $value = is_string($value)?$value:('(\''.implode("','",$value).'\')');
-                            return [3," IN $value",$field];
+                            $out_code = 3;
+                            $out_string = " IN $value";
+                            break;
                         default:
-                            return [3," $logic->value $value ",$field];
+                            $out_code = 3;
+                            $out_string = " $logic->value $value";
                     }
+                    $out_field  = $field;
+                }else{
+                    //属于是字段查询条件
+                    $out_field = is_array($field)?2:0;
                 }
-                return [1,[]];
+            }else{
+                // 属于是多个条件连接状态
+                $out_code = 2;
             }
-            return [2,[]];
         }
-
-        return [0,[]];
+        return [$out_code,$out_string,$out_field];
     }
 
     /**
