@@ -32,5 +32,5 @@ $model = new access();
 
 $test = new test();
 //var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->orderBy('id',Query::DESC)->count(true));
-//var_export($model->where(['username'=>'admin'])->find());
+var_export($model->where(['username'=>'admin'])->find());
 

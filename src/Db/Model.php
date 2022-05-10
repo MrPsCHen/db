@@ -18,7 +18,7 @@ class Model extends Builder
         $this->prefix           = Db::getConfig()->out()['prefix'];
         $this->table            = empty($this->table)?$this->_getTableNameFromClassName():$this->table;
         $this->table_struct     = new Table($this->table,$this->prefix);
-        parent::__construct(Db::getDrive(),$this->table);
+        parent::__construct(Db::getDrive(),$this->table,$this->prefix);
     }
 
     public function page(int $page = 1,int $length = 20): static
