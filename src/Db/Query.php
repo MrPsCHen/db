@@ -103,7 +103,7 @@ class Query
     public function find(): Result|array |string
     {
         $table      = $this->prefix.$this->table;
-        $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
+        $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT 0,1";
@@ -229,9 +229,6 @@ class Query
         foreach ($condition as $key => $node) {
             list($case,$enumString,$enumField) = $this->_checkEnumType($node);
             switch ($case){
-                case 0:
-                    $where_para.= "";
-                    break;
                 case 2:
                     $where_para.= "OR ".$this->_whereEnum($node);
                     break;
