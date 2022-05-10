@@ -136,9 +136,11 @@ class MysqlPdoDrive extends Drive
                 'sql'           => $pdo->queryString,
                 'errorInfo'     => $pdo->errorInfo(),
                 'lastInsertId'  => $this->pdo->lastInsertId(),
-                'affectedRows'  => $pdo->rowCount()
+                'affectedRows'  => $pdo->rowCount(),
+                'params'        => $array,
             ]);
         }
+
         return $result;
     }
     public function getConfig():config

@@ -117,22 +117,28 @@ class Builder extends Query
     public function apply(): Result|array|string
     {
         $result = new Result([]);
+
         if($this->INSERT_FLAG){
             $fields = empty($this->fields)?$this->insert_value:$this->fields;
-            $execute_sql = $this->_insert_sql($this->getTable(),$fields);
-            if($this->isToSql)return $execute_sql;
-            $result->addResult(static::$drive->executeQuery($execute_sql,$this->insert_param));
-        }
-        if($this->UPDATE_FLAG){
+            $_sql = $this->_insert_sql($this->getTable(),$fields);
+            $params = $this->insert_param;
+            if($this->isToSql)return [$_sql,$params];
+        }else if($this->UPDATE_FLAG){
             $set = '';
             foreach ($this->update_value as $val){$set.="$val=?, ";}
             $set = rtrim($set,' ,');
-            $update_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
+            $_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
             $params = [array_merge($this->bind_params,array_values($this->update_param))];
-            if($this->isToSql)return $params;
-            $result->addResult(static::$drive->executeQuery($update_sql,$params));
+            if($this->isToSql)return [$_sql,$params];
+        }else{
+            throw new DbException('error');
         }
+        $result->addResult(static::$drive->executeQuery($_sql,$params));
+        //清空参数
+        $this->where_para = '';
+        $this->update_param = [];
+        $this->insert_param = [];
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
         return $result;
 
