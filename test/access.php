@@ -29,7 +29,7 @@ class test extends Model{
 
 
 $model = new access();
-$result = $model->where('id',1)->count();
+$result = $model->where('id',1)->find();
 var_export($result);
 //$result = $model->where('id',1)->update(['password'=>222])->apply();
 //$test = new test();
