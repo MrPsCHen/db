@@ -129,8 +129,7 @@ class Builder extends Query
             $set = rtrim($set,' ,');
             $_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
-
-            $params = [array_merge($this->bind_params,array_values($this->update_param))];
+            $params = [array_merge(array_values($this->update_param),$this->bind_params)];
             if($this->isToSql)return [$_sql,$params];
         }else{
             throw new DbException('error');
