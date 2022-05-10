@@ -29,8 +29,9 @@ class test extends Model{
 
 
 $model = new access();
-$model->where('id',1)->find();
-$result = $model->where('id',1)->update(['password'=>222])->apply();
+$result = $model->where('id',1)->count();
+var_export($result);
+//$result = $model->where('id',1)->update(['password'=>222])->apply();
 //$test = new test();
 //var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->orderBy('id',Query::DESC)->count(true));
 //var_export($model->where(['username'=>'admin'])->find());

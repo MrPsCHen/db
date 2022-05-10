@@ -38,7 +38,14 @@ class Result
 
     public function first(){
         if(empty($this->result))return [];
-        return reset($this->result);
+        return $this->_first($this->result);
+    }
+
+
+    private function _first(mixed $result)
+    {
+        return is_array($result)?$this->_first(reset($result)):$result;
+
     }
 
 
