@@ -114,12 +114,13 @@ class Builder extends Query
     /**
      * @throws DbException
      */
-    public function apply(): Result|array
+    public function apply(): Result|array|string
     {
         $result = new Result([]);
         if($this->INSERT_FLAG){
             $fields = empty($this->fields)?$this->insert_value:$this->fields;
             $execute_sql = $this->_insert_sql($this->getTable(),$fields);
+            if($this->isToSql)return $execute_sql;
             $result->addResult(static::$drive->executeQuery($execute_sql,$this->insert_param));
         }
         if($this->UPDATE_FLAG){
@@ -128,6 +129,7 @@ class Builder extends Query
             $set = rtrim($set,' ,');
             $update_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
+            if($this->isToSql)return $update_sql;
             $result->addResult(static::$drive->executeQuery($update_sql,[array_merge(array_values($this->update_param),$this->bind_params)]));
         }
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
