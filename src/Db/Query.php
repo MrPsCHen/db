@@ -45,6 +45,8 @@ class Query
 
     protected           ?string $order_by      = null;
 
+    protected           bool    $isToSql       = false;
+
 
     /**
      * @throws DbException
@@ -68,14 +70,22 @@ class Query
     public function setPrefix(string $prefix): void
     {
         $this->$prefix = $prefix;
-        var_export($this->prefix);
     }
 
+    /**
+     * 答应语句
+     * @return $this
+     */
+    public function toSql(): static
+    {
+        $this->isToSql = true;
+        return $this;
+    }
 
     /**
      * @throws DbException
      */
-    public function select(): Result
+    public function select(): Result | string
     {
         $table      = $this->prefix.$this->table;
         $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";
@@ -83,20 +93,21 @@ class Query
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
 
-
+        if($this->isToSql)return $baseSql;
         return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
     }
 
     /**
      * @throws DbException
      */
-    public function find(): Result|array
+    public function find(): Result|array |string
     {
         $table      = $this->prefix.$this->table;
         $baseSql    = "SELECT {$this->_outField()} FROM $table {$this->_join()} ";;
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT 0,1";
+        if($this->isToSql)return $baseSql;
         return (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
     }
 
@@ -110,6 +121,7 @@ class Query
         $table      = $this->prefix.$this->table;
         $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
+        if($this->isToSql)return $baseSql;
         $callback   = (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
         if($realValue){
             return reset($callback);
