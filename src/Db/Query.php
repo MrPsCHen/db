@@ -112,7 +112,7 @@ class Query
         if($this->isToSql)return $baseSql;
         $callback   = $this->_apply($baseSql,$this->bind_params);
         if($realValue){
-            return reset($callback);
+            return $callback->first();
         }else{
             return $callback;
         }
