@@ -110,7 +110,7 @@ class Query
         $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         if($this->isToSql)return $baseSql;
-        $callback   = $this->_apply($baseSql,$this->bind_params)->first();
+        $callback   = $this->_apply($baseSql,$this->bind_params)->toArray();
         if($realValue){
             return reset($callback);
         }else{
