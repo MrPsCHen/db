@@ -22,8 +22,8 @@ try {
     $table->setShowFields(['id']);
 //    $result = Db::table('access')->field('id')->join($table)->where(['id'=>"1 "])->find();
 //    var_export($result);
-    $result = Db::table('admin_user')->where(['id'=>1])->count();
-    var_export($result);
+//    $result = Db::table('admin_user')->where(['id'=>1])->();
+    $result = Db::build('admin_user')->where('id',1)->update(['type'=>1])->apply();
 } catch (\Exception $e) {
     var_export($e->getMessage());
 }

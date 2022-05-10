@@ -119,6 +119,7 @@ class MysqlPdoDrive extends Drive
     public function executeQuery(string $sql, array $array): Result
     {
         self::connect();//连接数据库
+        $result = new Result([]);
         foreach ($array as $k => $section){
             $pdo = $this->pdo->prepare($sql); //预处理
             foreach ($section as $kk => $para){
@@ -128,9 +129,17 @@ class MysqlPdoDrive extends Drive
                     $pdo->bindParam(":$kk",$array[$k][$kk]);//绑定参数
                 }
             }
-            $pdo->execute();
+            $back = $pdo->execute();
+
+            $result->addResult([
+                'status'        => $back,
+                'sql'           => $pdo->queryString,
+                'errorInfo'     => $pdo->errorInfo(),
+                'lastInsertId'  => $this->pdo->lastInsertId(),
+                'affectedRows'  => $pdo->rowCount()
+            ]);
         }
-        return new Result([]);
+        return $result;
     }
     public function getConfig():config
     {

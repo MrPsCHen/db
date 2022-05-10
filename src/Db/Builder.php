@@ -22,12 +22,12 @@ class Builder extends Query
     /**
      * @throws DbException
      */
-    protected function __construct(Drive $drive, mixed $table)
+    protected function __construct(Drive $drive, mixed $table,$prefix)
     {
         static::$drive = $drive;
+        $this->prefix = $prefix;
         $this->mysqlPdoDrive = $drive;
         Table::setDrive($drive);
-
         $this->table_struct = new Table($table, $this->prefix);
     }
 
@@ -40,7 +40,12 @@ class Builder extends Query
      */
     public static function bind(Drive $drive, $table,$prefix = null): Builder
     {
-        return new static($drive, $table);
+        $self = new self($drive,$table,$prefix??$drive->getConfig()->out()['prefix']);
+        static::$drive = $drive;
+        Table::setDrive($drive);
+        $self->table    = $table;
+        $self->table_struct = new Table($table,$self->prefix);
+        return $self;
     }
 
     /**
