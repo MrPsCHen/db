@@ -140,7 +140,6 @@ class MysqlPdoDrive extends Drive
                 'params'        => $array,
             ]);
         }
-
         return $result;
     }
     public function getConfig():config

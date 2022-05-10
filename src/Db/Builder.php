@@ -129,21 +129,26 @@ class Builder extends Query
             $set = rtrim($set,' ,');
             $_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
+
             $params = [array_merge($this->bind_params,array_values($this->update_param))];
             if($this->isToSql)return [$_sql,$params];
         }else{
             throw new DbException('error');
         }
         $result->addResult(static::$drive->executeQuery($_sql,$params));
-        //清空参数
-        $this->where_para = '';
-        $this->update_param = [];
-        $this->insert_param = [];
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
+        $this->clearParam();
+
         return $result;
 
     }
 
+    public function clearParam(): static
+    {
+        $this->update_param = [];
+        $this->insert_param = [];
+        return parent::clearParam();
+    }
 
     /**
      * @param array $input

@@ -59,7 +59,6 @@ class Query
         Table::setDrive($drive);
         $self->prefix   = $prefix??$drive->getConfig()->out()['prefix'];
         $self->table    = $table;
-
         $self->table_struct = new Table($table,$self->prefix);
         return $self;
     }
@@ -73,16 +72,6 @@ class Query
     }
 
     /**
-     * 答应语句
-     * @return $this
-     */
-    public function toSql(): static
-    {
-        $this->isToSql = true;
-        return $this;
-    }
-
-    /**
      * @throws DbException
      */
     public function select(): Result | string
@@ -92,9 +81,8 @@ class Query
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT {$this->limit[0]},{$this->limit[1]}";
-
         if($this->isToSql)return $baseSql;
-        return new Result(self::$drive->baseQuery($baseSql,$this->bind_params));
+        return $this->_apply($baseSql,$this->bind_params);
     }
 
     /**
@@ -108,7 +96,7 @@ class Query
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT 0,1";
         if($this->isToSql)return $baseSql;
-        return (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
+        return $this->_apply($baseSql,$this->bind_params)->first();
     }
 
     /**
@@ -122,19 +110,41 @@ class Query
         $baseSql    = "SELECT count(*) FROM $table {$this->_join()} ";
         !empty($this->where_para)   && $baseSql .= "WHERE $this->where_para";
         if($this->isToSql)return $baseSql;
-        $callback   = (new Result(self::$drive->baseQuery($baseSql,$this->bind_params)))->first();
+        $callback   = $this->_apply($baseSql,$this->bind_params)->first();
         if($realValue){
             return reset($callback);
         }else{
             return $callback;
         }
     }
+
+    /**
+     * 答应语句
+     * @return $this
+     */
+    public function toSql(): static
+    {
+        $this->isToSql = true;
+        return $this;
+    }
+
+    /**
+     * @param int $index
+     * @param int $length
+     * @return $this
+     */
     public function limit(int $index, int $length): static
     {
         $this->limit[0] = $index;
         $this->limit[1] = $length;
         return $this;
     }
+
+    /**
+     * @param string $field
+     * @param string $sort
+     * @return $this
+     */
     public function orderBy(string $field,string $sort = Query::ASC): static
     {
         $this->order_by = " ORDER BY `$field` $sort";
@@ -153,7 +163,7 @@ class Query
     }
 
     /**
-     * @throws Exception
+     * @throws DbException
      */
     public function where(mixed $condition, ?string $value = null): static
     {
@@ -169,7 +179,7 @@ class Query
 
             $this->where_para = $this->_whereEnum([$condition],'OR');
         }else{
-            throw new Exception("类型错误");
+            throw new DbException("类型错误");
         }
         return $this;
     }
@@ -200,9 +210,19 @@ class Query
         return $this;
     }
 
-
+    /**
+     * 清理参数
+     */
+    public function clearParam(): static
+    {
+        //清空参数
+        $this->where_para = '';
+        $this->bind_params  = [];
+        return $this;
+    }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
+
     protected function _outField():string
     {
         if(empty($this->fields) && empty($this->join_table)){
@@ -323,4 +343,10 @@ class Query
         return $_join;
     }
 
+    private function _apply(string $baseSql,array $params):Result
+    {
+        $result = new Result(self::$drive->baseQuery($baseSql,$params));
+        $this->clearParam();
+        return $result;
+    }
 }

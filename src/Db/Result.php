@@ -24,6 +24,11 @@ class Result
             $this->gather[] = $result;
             $this->result = $result;
         }
+        if($result instanceof self)
+        {
+            $this->gather[] =$result->toArray();
+            $this->result = $result->toArray();
+        }
     }
 
     public function getAllResult(): array
