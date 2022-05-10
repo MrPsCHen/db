@@ -129,8 +129,9 @@ class Builder extends Query
             $set = rtrim($set,' ,');
             $update_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
-            if($this->isToSql)return $update_sql;
-            $result->addResult(static::$drive->executeQuery($update_sql,[array_merge(array_values($this->update_param),$this->bind_params)]));
+            $params = [array_merge($this->bind_params,array_values($this->update_param))];
+            if($this->isToSql)return $params;
+            $result->addResult(static::$drive->executeQuery($update_sql,$params));
         }
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
         return $result;

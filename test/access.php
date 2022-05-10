@@ -20,7 +20,7 @@ Db::setDrive( new MysqlPdoDrive());
 
 class access extends Model
 {
-    public string $table = "access";
+    public string $table = "admin_user";
 
 }
 class test extends Model{
@@ -30,7 +30,9 @@ class test extends Model{
 
 $model = new access();
 
-$test = new test();
+var_export($model->where('id',1)->update(['password'=>222])->toSql()->apply());
+
+//$test = new test();
 //var_export($model->where(['id'=>1])->field(['username','avatar','nickname','wechat_id','alipay_id','status'])->orderBy('id',Query::DESC)->count(true));
-var_export($model->where(['username'=>'admin'])->find());
+//var_export($model->where(['username'=>'admin'])->find());
 
