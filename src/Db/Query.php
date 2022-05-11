@@ -96,8 +96,7 @@ class Query
         $this->order_by             && $baseSql .= $this->order_by;
         $this->limit                && $baseSql .= " LIMIT 0,1";
         if($this->isToSql)return $baseSql;
-        $back = $this->_apply($baseSql,$this->bind_params)->toArray();
-        return reset($back);
+        return $this->_apply($baseSql,$this->bind_params)->toArray();
     }
 
     /**
