@@ -36,6 +36,14 @@ class Result
         return $this->gather;
     }
 
+    public function one(): array|null
+    {
+        if (is_array($this->result) && isset($this->result[0])) {
+            return $this->result[0];
+        }
+        return $this->result;
+    }
+
     public function first(){
         if(empty($this->result))return [];
         return $this->_first($this->result);
