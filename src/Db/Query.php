@@ -289,7 +289,7 @@ class Query
         if(is_array($node)){
             if(count($node) == 3){
                 list($field,$logic,$value) = array_values($node);
-                if(!is_null($logic)&&($logic instanceof Logic || $logic = Logic::tryFrom($logic))){
+                if(!is_null($logic)&&($logic instanceof Logic || (is_string($logic) && $logic = Logic::tryFrom($logic)))){
                     switch ($logic->name){
                         case Logic::LIKE->name:
                             $out_code   = 3;
@@ -307,6 +307,7 @@ class Query
                     $out_field  = $field;
                 }else{
                     //属于是字段查询条件
+                    $out_code = 2;
                     $out_field = is_array($field)?2:0;
                 }
             }else{
