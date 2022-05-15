@@ -73,5 +73,13 @@ class Db
         return Builder::bind(self::$drive,$table,$prefix);
     }
 
+    /**
+     * @throws DbException
+     */
+    public static function self(): Builder
+    {
+        return new Builder(self::$drive,null);
+    }
+
 
 }

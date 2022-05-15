@@ -22,13 +22,14 @@ class Builder extends Query
     /**
      * @throws DbException
      */
-    protected function __construct(Drive $drive, mixed $table,$prefix)
+    public function __construct(Drive $drive, mixed $table = null,$prefix = '')
     {
         static::$drive = $drive;
         $this->prefix = $prefix;
         $this->mysqlPdoDrive = $drive;
         Table::setDrive($drive);
-        $this->table_struct = new Table($table, $this->prefix);
+        $drive->connect();
+        $table && $this->table_struct = new Table($table, $this->prefix);
     }
 
     protected function __clone(): void

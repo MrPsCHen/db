@@ -12,7 +12,7 @@ use PDOException;
 class MysqlPdoDrive extends Drive
 {
     protected           Config  $Config;
-    protected           ?PDO    $pdo            = null;
+    protected static    ?PDO    $pdo            = null;
     protected static    string  $charset        = 'utf8';
     protected static    int     $affected_rows  = 0;
     protected static    string  $error_msg      = '';
@@ -30,7 +30,7 @@ class MysqlPdoDrive extends Drive
         $config = $this->Config->out();
         $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
         try {
-            $pdo = $this->pdo = $this->pdo ?? new PDO($dsn,$config['username'],$config['password']);
+            $pdo = self::$pdo = self::$pdo ?? new PDO($dsn,$config['username'],$config['password']);
             $pdo->exec("set names ".self::$charset);
         }catch (PDOException $exception){
             self::$error_msg = $exception->getMessage();
@@ -69,20 +69,21 @@ class MysqlPdoDrive extends Drive
     {
         $result = null;
         static::connect();
-        if($this->pdo) {
+        $pdo = self::$pdo;
+        if($pdo) {
             if (empty($bindParams)) {
-                $result = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                $result = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             } else {
 
-                $pdo = $this->pdo->prepare($sql);
+                $pdoIns = $pdo->prepare($sql);
 
                 foreach ($bindParams as $k =>$v)
                 {
 
-                    $pdo->bindParam($k+1,$bindParams[$k]);
+                    $pdoIns->bindParam($k+1,$bindParams[$k]);
                 }
-                $pdo->execute();
-                $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
+                $pdoIns->execute();
+                $result = $pdoIns->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
@@ -94,7 +95,7 @@ class MysqlPdoDrive extends Drive
      */
     public function beginTransaction(): bool
     {
-        return $this->pdo->beginTransaction();
+        return self::$pdo->beginTransaction();
     }
 
     /**
@@ -102,7 +103,8 @@ class MysqlPdoDrive extends Drive
      */
     public function commit(): bool
     {
-        return $this->pdo->commit();
+
+        return self::$pdo->commit();
     }
 
     /**
@@ -110,7 +112,8 @@ class MysqlPdoDrive extends Drive
      */
     public function rollBack(): bool
     {
-        return $this->pdo->rollBack();
+
+        return self::$pdo->rollBack();
     }
 
     /**
@@ -121,7 +124,7 @@ class MysqlPdoDrive extends Drive
         self::connect();//连接数据库
         $result = new Result([]);
         foreach ($array as $k => $section){
-            $pdo = $this->pdo->prepare($sql); //预处理
+            $pdo = self::$pdo->prepare($sql); //预处理
             foreach ($section as $kk => $para){
                 if(is_numeric($kk)){
                     $pdo->bindParam($kk+1,$array[$k][$kk]);//绑定参数
@@ -135,7 +138,7 @@ class MysqlPdoDrive extends Drive
                 'status'        => $back,
                 'sql'           => $pdo->queryString,
                 'errorInfo'     => $pdo->errorInfo(),
-                'lastInsertId'  => $this->pdo->lastInsertId(),
+                'lastInsertId'  => self::$pdo->lastInsertId(),
                 'affectedRows'  => $pdo->rowCount(),
                 'params'        => $array,
             ]);
