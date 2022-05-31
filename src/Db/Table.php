@@ -37,9 +37,12 @@ class Table implements TableType
 
     protected           ?array  $show_fields    = null;//显示字段
 
+    protected           array   $filter         = [];
+
     /**
      * @param string $table
      * @param string $prefix
+     * @param Drive|null $drive
      * @throws DbException
      */
     public function __construct(string $table = '', string $prefix = '',Drive $drive = null)
@@ -142,6 +145,7 @@ class Table implements TableType
     }
 
     /**
+     * @param bool $field_type
      * @return array
      */
     public function getFieldFull(bool $field_type = false): array
@@ -149,7 +153,14 @@ class Table implements TableType
         if($field_type){
             $field_full = [];
             foreach ($this->field_full as $key => $item){
-                if(!is_null($this->show_fields) && !in_array($item,$this->show_fields))continue;
+                if(
+                    !is_null($this->show_fields) //
+                    && !in_array($item,$this->show_fields)
+                    || in_array($item,$this->filter)
+                ) {
+                    continue;
+                }
+
                 if(is_string($this->alias)){
                     $field_full[] = "`$this->prefix$this->table`.`$item` AS `$this->alias$item`";
                 }elseif(is_array($this->alias) && in_array($key,$this->alias)){
@@ -158,9 +169,17 @@ class Table implements TableType
                     break;
                 }
             }
+            $this->filter = [];
             return $field_full;
         }
         return $this->field_full;
+    }
+
+
+    public function filter(string|array $field):static
+    {
+        $this->filter = is_string($field)?explode(',',$field):$field;
+        return $this;
     }
 
     public function getFields(): array

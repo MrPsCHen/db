@@ -38,6 +38,8 @@ class Query
 
     protected           array   $fields         = [];
 
+    protected           array   $filter         = [];
+
     /** @var string 查询条件段落 */
     protected           string  $where_para     = '';
 
@@ -184,6 +186,10 @@ class Query
         return $this;
     }
 
+    /**
+     * @param mixed $field
+     * @return $this
+     */
     public function field(mixed $field): static
     {
         if(is_string($field)){
@@ -193,6 +199,17 @@ class Query
         }
         return $this;
     }
+
+    /**
+     * @param mixed $field
+     * @return $this
+     */
+    public function filter(string|array $field):static
+    {
+        $this->filter = is_string($field)?explode(',',$field):$field;
+        return $this;
+    }
+
 
     /**
      * @throws DbException
@@ -226,7 +243,12 @@ class Query
     protected function _outField():string
     {
         if(empty($this->fields) && empty($this->join_table)){
-            return "*";
+            if(!empty($this->filter)){
+                $field_full = $this->table_struct->filter($this->filter)->getFieldFull(true);
+                return implode(',',$field_full);
+            }else{
+                return '*';
+            }
         }else{
             !empty($this->fields) && $this->table_struct->setShowFields($this->fields);
             $field_full = $this->table_struct->getFieldFull(true);
