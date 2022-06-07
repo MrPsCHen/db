@@ -51,15 +51,19 @@ class Result
      */
     public function lastInsertId():int|null
     {
-        if(!isset($this->result['lastInsertId'])){
-            return null;
-        }
-        return $this->result['lastInsertId'];
+        return $this->result['lastInsertId'] ?? null;
+    }
+
+    public function affectedRows():int|null
+    {
+        return $this->result['affectedRows'] ?? null;
     }
 
     public function first(){
-        if(empty($this->result))return [];
-        return $this->_first($this->result);
+        if(empty($this->result))
+            return [];
+        else
+            return $this->_first($this->result);
     }
 
 
