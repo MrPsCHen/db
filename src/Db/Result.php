@@ -44,6 +44,19 @@ class Result
         return $this->result;
     }
 
+    /**
+     * 取得插入ID
+     * @return int|null
+     *
+     */
+    public function lastInsertId():int|null
+    {
+        if(!isset($this->result['lastInsertId'])){
+            return null;
+        }
+        return $this->result['lastInsertId'];
+    }
+
     public function first(){
         if(empty($this->result))return [];
         return $this->_first($this->result);
