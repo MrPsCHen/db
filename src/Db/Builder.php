@@ -16,16 +16,17 @@ class Builder extends Query
     protected array $insert_param = [];
     protected array $update_value = [];
     protected array $update_param = [];
-    protected bool  $INSERT_FLAG = false;
-    protected bool  $UPDATE_FLAG = false;
-    protected bool  $DELETE_FLAG = false;
+    protected bool $INSERT_FLAG = false;
+    protected bool $UPDATE_FLAG = false;
+    protected bool $DELETE_FLAG = false;
+
     /**
      * @throws DbException
      */
-    public function __construct(Drive $drive, mixed $table = null,$prefix = '')
+    public function __construct(Drive $drive, mixed $table = null, $prefix = '')
     {
         static::$drive = $drive;
-        $this->prefix = $prefix;
+        $this->prefix = $this->prefix ?: $prefix;
         $this->mysqlPdoDrive = $drive;
         Table::setDrive($drive);
         $drive->connect();
@@ -39,13 +40,13 @@ class Builder extends Query
     /**
      * @throws DbException
      */
-    public static function bind(Drive $drive, $table,$prefix = null): Builder
+    public static function bind(Drive $drive, $table, $prefix = null): Builder
     {
-        $self = new self($drive,$table,$prefix??$drive->getConfig()->out()['prefix']);
+        $self = new self($drive, $table, $prefix ?? $drive->getConfig()->out()['prefix']);
         static::$drive = $drive;
         Table::setDrive($drive);
-        $self->table    = $table;
-        $self->table_struct = new Table($table,$self->prefix);
+        $self->table = $table;
+        $self->table_struct = new Table($table, $self->prefix);
         return $self;
     }
 
@@ -87,7 +88,7 @@ class Builder extends Query
         for ($i = 0; $i < func_num_args(); $i++) {
             $this->insert_param[] = $this->_input(func_get_args()[$i], $FIELDS, $i);
         }
-        $this->insert_value = empty($insert_param = array_keys($this->insert_param[0]))?$FIELDS:$insert_param;
+        $this->insert_value = empty($insert_param = array_keys($this->insert_param[0])) ? $FIELDS : $insert_param;
         $this->INSERT_FLAG = true;
         return $this;
     }
@@ -100,7 +101,7 @@ class Builder extends Query
     {
         $FIELDS = empty($this->fields) ? $this->table_struct->getFields() : $this->fields;
 
-        $this->update_param = $this->_input($input,$FIELDS,0);
+        $this->update_param = $this->_input($input, $FIELDS, 0);
 
         $this->update_value = empty($this->fields) ? array_keys($this->update_param) : $this->fields;
         $this->UPDATE_FLAG = true;
@@ -119,23 +120,25 @@ class Builder extends Query
     {
         $result = new Result([]);
 
-        if($this->INSERT_FLAG){
-            $fields = empty($this->fields)?$this->insert_value:$this->fields;
-            $_sql = $this->_insert_sql($this->getTable(),$fields);
+        if ($this->INSERT_FLAG) {
+            $fields = empty($this->fields) ? $this->insert_value : $this->fields;
+            $_sql = $this->_insert_sql($this->getTable(), $fields);
             $params = $this->insert_param;
-            if($this->isToSql)return [$_sql,$params];
-        }else if($this->UPDATE_FLAG){
+            if ($this->isToSql) return [$_sql, $params];
+        } else if ($this->UPDATE_FLAG) {
             $set = '';
-            foreach ($this->update_value as $val){$set.="$val=?, ";}
-            $set = rtrim($set,' ,');
-            $_sql = $this->_update_sql($this->getTable(),$set,$this->where_para);
+            foreach ($this->update_value as $val) {
+                $set .= "$val=?, ";
+            }
+            $set = rtrim($set, ' ,');
+            $_sql = $this->_update_sql($this->getTable(), $set, $this->where_para);
             empty($this->where_para) && throw new DbException('Conditions must apply');
-            $params = [array_merge(array_values($this->update_param),$this->bind_params)];
-            if($this->isToSql)return [$_sql,$params];
-        }else{
+            $params = [array_merge(array_values($this->update_param), $this->bind_params)];
+            if ($this->isToSql) return [$_sql, $params];
+        } else {
             throw new DbException('error');
         }
-        $result->addResult(static::$drive->executeQuery($_sql,$params));
+        $result->addResult(static::$drive->executeQuery($_sql, $params));
         $this->INSERT_FLAG = $this->UPDATE_FLAG = $this->DELETE_FLAG = false;
         $this->clearParam();
 
@@ -158,7 +161,7 @@ class Builder extends Query
      * @return array|null
      * @throws DbException
      */
-    protected function _input(array $input, array $fields, int $idx,int $type =0): ?array
+    protected function _input(array $input, array $fields, int $idx, int $type = 0): ?array
     {
         $model = null;
         foreach ($input as $k => $v) {
@@ -166,15 +169,14 @@ class Builder extends Query
             (is_numeric($k) ? 1 : 2) !== $model &&
             throw new DbException("input type error:array[$idx]");
         }
-        if($type && $model !== $type)return null;
-        if($model == 1){
-            if(count(array_values($fields)) != count(array_values($input)))
+        if ($type && $model !== $type) return null;
+        if ($model == 1) {
+            if (count(array_values($fields)) != count(array_values($input)))
                 throw new DbException("must have the same number of elements");
-            return array_combine(array_values($fields),array_values($input));
-        }
-        else if($model == 2){
+            return array_combine(array_values($fields), array_values($input));
+        } else if ($model == 2) {
             return $input;
-        }else
+        } else
             throw new DbException("Illegal input");
     }
 
@@ -185,10 +187,10 @@ class Builder extends Query
         return "INSERT INTO $table_name($FIELD) VALUES ($VALUE)";
     }
 
-    protected function _update_sql(string $table_name,string $set,string $where =null):string
+    protected function _update_sql(string $table_name, string $set, string $where = null): string
     {
         $update_sql = "UPDATE $table_name SET $set ";
-        $where && $update_sql.= "WHERE $where";
+        $where && $update_sql .= "WHERE $where";
         return $update_sql;
     }
 

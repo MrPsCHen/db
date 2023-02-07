@@ -8,7 +8,6 @@ include "../vendor/autoload.php";
 
 $config = MysqlConfig::set('10.0.0.9','origin','root','root');
 $drive  = new MysqlPdoDrive();
-$config::setPrefix('app_');
 Db::setConfig($config);
 Db::setDrive($drive);
 
