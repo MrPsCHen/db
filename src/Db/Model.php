@@ -15,7 +15,7 @@ class Model extends Builder
      */
     public function __construct()
     {
-        $this->prefix           = Db::getConfig()->out()['prefix'];
+        $this->prefix           = $this->prefix ?: Db::getConfig()->out()['prefix'];
         $this->table            = empty($this->table)?$this->_getTableNameFromClassName():$this->table;
         $this->table_struct     = new Table($this->table,$this->prefix);
         parent::__construct(Db::getDrive(),$this->table,$this->prefix);
